@@ -1,0 +1,29 @@
+{
+  "name": "mongo-mongo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "coverage": "nyc --reporter=html --reporter=text _mocha",
+    "compile": "babel src -d lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-runtime": "^6.20.0",
+    "co": "^4.6.0",
+    "mongodb": "^2.2.16",
+    "thunky": "^1.0.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-env": "^1.1.8",
+    "mocha": "^3.2.0",
+    "muk": "^0.5.3",
+    "nyc": "^10.0.0"
+  }
+}
