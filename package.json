@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "coverage": "nyc --reporter=html --reporter=text _mocha",
+    "test_no_coverage": "mocha",
+    "test": "nyc --reporter=html --reporter=text _mocha",
     "compile": "babel src -d lib"
   },
   "repository": {
