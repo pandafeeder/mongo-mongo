@@ -1,6 +1,6 @@
 {
   "name": "mongo-mongo",
-  "version": "1.0.0",
+  "version": "0.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,16 +8,24 @@
     "coverage": "nyc --reporter=html --reporter=text _mocha",
     "compile": "babel src -d lib"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pandafeeder/mongo-mongo.git"
+  },
   "keywords": [],
-  "author": "",
+  "author": "pandafeeder@gmail.com",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pandafeeder/mongo-mongo/issues"
+  },
+  "homepage": "https://github.com/pandafeeder/mongo-mongo#readme",
   "dependencies": {
     "babel-runtime": "^6.20.0",
     "co": "^4.6.0",
-    "mongodb": "^2.2.16",
     "thunky": "^1.0.1"
   },
   "devDependencies": {
+    "mongodb": "^2.2.16",
     "babel-cli": "^6.18.0",
     "babel-plugin-transform-runtime": "^6.15.0",
     "babel-polyfill": "^6.20.0",

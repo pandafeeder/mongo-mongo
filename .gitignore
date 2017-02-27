@@ -39,3 +39,5 @@ jspm_packages
 #database
 database
 
+#editor
+*.swp
