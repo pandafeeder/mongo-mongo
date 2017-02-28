@@ -160,6 +160,7 @@ describe('test for class', function() {
     }
     assert.throws(() => {
       let t = new TEST({friends: 'HanMeimei'})
+      t.save()
     }, Error)
   })
   it('this should throw Error data is not Array but type is [String]', function() {
@@ -173,6 +174,7 @@ describe('test for class', function() {
     }
     assert.throws(() => {
       let t = new TEST({friends: 'HanMeimei'})
+      t.save()
     }, Error)
   })
   it('this should throw Error when Array type has more than one sub types like: [String, Number]', function() {
@@ -186,6 +188,7 @@ describe('test for class', function() {
     }
     assert.throws(() => {
       let t = new TEST({friends: 'HanMeimei'})
+      t.save()
     }, Error)
   })
   it('this should throw Error when schema is not object, function, or Array', function() {
@@ -199,6 +202,7 @@ describe('test for class', function() {
     }
     assert.throws(() => {
       let t = new TEST({age: 11})
+      t.save()
     }, Error)
   })
   it('this should throw Error since no db is set', function() {

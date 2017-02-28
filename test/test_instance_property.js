@@ -43,6 +43,7 @@ describe('test for doc instance:', function() {
       it('this should throw Error when undefined field passed to constructor', function() {
         assert.throws(() => {
           let book = new Books1({age: 11, publish: new Date})
+          book.save()
         }, Error)
       })
       it('test for getter function', function() {
@@ -55,7 +56,7 @@ describe('test for doc instance:', function() {
       it('test for getCollectionName, this should return books1 for book2', function() {
         assert.equal(book2.getCollectionName(), 'books1')
       })
-      it('__data should have _id, title, price, publish, keywords, and brought(default) should be a ObjectID instance', function() {
+      it('__data should have _id, title, price, publish, keywords, and brought(default), _id should be a ObjectID instance', function() {
         assert.ok(Object.keys(book.__data).length === 6)
         assert.ok(book.__data._id instanceof ObjectID)
       })
