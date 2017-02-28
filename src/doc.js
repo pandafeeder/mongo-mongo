@@ -118,7 +118,6 @@ class DOC {
    * initial check against data params passed in constructor
    */
   initCheck() {
-    //skip if obj is constructed with no arguments, then will check inside save
     if (Object.keys(this.__data).length > 1) {
       let proto = Object.getPrototypeOf(this)
       proto.__requiredButNoDefault.forEach(v => {
@@ -126,16 +125,16 @@ class DOC {
           throw new Error(`${v} is required, but not supplied`)
         }
       })
-      proto.__default.forEach(v => {
-        if (!this.__data.hasOwnProperty(v)) {
-          this.__data[v] = proto.__schema[v]['default']
-        }
-      })
       Object.keys(this.__data).forEach(e => {
         if (e === '_id') return
         //thorw error for any un-predefined schema
         if (!proto.__schema[e]) throw new Error(`no ${e} field in schema`)
         this.singleCheck(proto.__schema[e], this.__data[e])
+      })
+      proto.__default.forEach(v => {
+        if (!this.__data.hasOwnProperty(v)) {
+          this.__data[v] = proto.__schema[v]['default']
+        }
       })
       this.__checked = true
     }
@@ -163,7 +162,7 @@ class DOC {
           }
           if (schemaObj[e].hasOwnProperty('validator')) {
             if (typeof schemaObj[e]['validator'] !== 'function') {
-              throw new Error(`${schemaObj[e]['validator']} must be a function}`)
+              throw new Error(`${schemaObj[e]['validator']} must be a function`)
             }
           }
           if (schemaObj[e].required && !schemaObj[e].hasOwnProperty('default')) {
@@ -317,16 +316,16 @@ class DOC {
       let proto = Object.getPrototypeOf(this)
       proto.__collection ? null : this.getCollectionName()
       let inited = proto.__inited
-      if (!proto.__inited) {
-        proto.__inited = true
+      if (!self.__checked) {
+        self.initCheck()
+      }
+      if (Object.keys(self.__data).length === 1) {
+        throw new Error('you have not defined any data yet before saving')
       }
       let operations = co(function* () {
-        if (Object.keys(self.__data).length === 0) {
-          throw new Error('you have not defined any data yet before saving')
-        }
         //this if block createIndex according to schema's unique and sparse setup
         if (!inited) {
-          //cancel exposing setup collection's validator AIP, seems not practical
+          //cancel exposing setup collection's validator API, seems not practical
           //if (self.constructor.setValidator && !validated) {
           //  let hasError = false
           //  let validOptObj = self.constructor.setValidator()
@@ -391,6 +390,9 @@ class DOC {
           })
         })
       })
+      //if (!proto.__inited) {
+      proto.__inited = true
+      //}
       return operations
     } else {
       //once object has been saved, another save call invokes update instead
