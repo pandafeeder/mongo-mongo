@@ -2,6 +2,7 @@
 logs
 *.log
 npm-debug.log*
+.coveralls.yml
 
 # Runtime data
 pids
