@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test_no_coverage": "mocha",
-    "test": "nyc --reporter=html --reporter=text _mocha",
+    "test": "nyc --reporter=html --reporter=text --reporter=lcov _mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "compile": "babel src -d lib"
   },
   "repository": {
@@ -25,12 +25,13 @@
     "thunky": "^1.0.1"
   },
   "devDependencies": {
-    "mongodb": "^2.2.16",
     "babel-cli": "^6.18.0",
     "babel-plugin-transform-runtime": "^6.15.0",
     "babel-polyfill": "^6.20.0",
     "babel-preset-env": "^1.1.8",
+    "coveralls": "^2.11.16",
     "mocha": "^3.2.0",
+    "mongodb": "^2.2.16",
     "muk": "^0.5.3",
     "nyc": "^10.0.0"
   }
