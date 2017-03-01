@@ -396,7 +396,7 @@ class DOC {
       return operations
     } else {
       //once object has been saved, another save call invokes update instead
-      this.update()
+      return this.update()
     }
   }
 
@@ -480,9 +480,10 @@ class DOC {
   //the following are commonly used  native's CURD functions
   //1. CREATE
   static insert() {
-    console.warn('insert is Deprecated: use findOneAndDelete instead')
+    throw new Error('insert is Deprecated: use findOneAndDelete instead')
   }
   static insertOne(doc, options) {
+    console.warn('using this class\'s method insertOne will bypass the schema check you defined in constructor, use this on your own risk')
     this._checkDBExistence()
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
@@ -493,6 +494,7 @@ class DOC {
     })
   }
   static insertMany(docs, options) {
+    console.warn('using this class\'s method insertMany will bypass the schema check you defined in constructor, use this on your own risk')
     this._checkDBExistence()
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
@@ -505,7 +507,7 @@ class DOC {
 
   //2. UPDATE
   static findAndModify() {
-    console.warn('findAndModify is deprecated: use findOneAndUpdate, findOneAndReplace or findOneAndDelete instead')
+    throw new Error('findAndModify is deprecated: use findOneAndUpdate, findOneAndReplace or findOneAndDelete instead')
   }
   static replaceOne(filter, doc, options, callback) {
     this._checkDBExistence()
