@@ -148,24 +148,11 @@ describe('test for instance\' CURD opeartion', function() {
         title: '7 databases in 7 weeks',
         author: 'Eric Redmond and Jim R. Wilson',
         publish: new Date(2012,4,11),
-        price: 35,
+        price: 35.2,
       }).then(r => {
         assert.ok(r.insertedCount === 1)
         done()
       })
-    })
-    it('test class\'s insertMany', function(done) {
-      let data = [{title: 't1', publish: 'p1'},{title: 't2', publish: 't2'},{title: 't3', publish: 't3'}]
-      Books1.insertMany(data)
-        .then(r => {
-          assert.ok(r.insertedCount === data.length)
-          done()
-        })
-    })
-    it('this should throw error when using class\'s static findAndModify which is depreacted by native driver', function() {
-      assert.throws(() => {
-        Books1.findAndModify()
-      }, Error)
     })
   })
 })
