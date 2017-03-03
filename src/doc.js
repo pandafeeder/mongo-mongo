@@ -477,32 +477,27 @@ class DOC {
     let proto= this.prototype
     if (!proto.__db) throw new Error(`No db defined yet, use ${this.name}.setDB(db) to define which db to be used`)
   }
+
   //the following are commonly used  native's CURD functions
   //1. CREATE
   static insert() {
     throw new Error('insert is Deprecated: use findOneAndDelete instead')
   }
+
   static insertOne(doc, options) {
-    console.warn('using this class\'s method insertOne will bypass the schema check you defined in constructor, use this on your own risk')
     this._checkDBExistence()
-    return new Promise((resolve, reject) => {
-      this.prototype.__db.getDB(db => {
-        db.collection(this.prototype.__collection).insertOne(doc, options)
-          .then(result => resolve(result))
-          .catch(e => reject(e))
-      })
-    })
+    let newdoc = new this(doc)
+    return newdoc.save()
   }
+
   static insertMany(docs, options) {
-    console.warn('using this class\'s method insertMany will bypass the schema check you defined in constructor, use this on your own risk')
     this._checkDBExistence()
-    return new Promise((resolve, reject) => {
-      this.prototype.__db.getDB(db => {
-        db.collection(this.prototype.__collection).insertMany(docs, options)
-          .then(result => resolve(result))
-          .catch(e => reject(e))
-      })
-    })
+    let promises = []
+    for (let i = 0; i < docs.length; i++) {
+      let newdoc = new this(docs[i])
+      promises.push(newdoc.save())
+    }
+    return Promise.all(promises)
   }
 
   //2. UPDATE
@@ -598,10 +593,10 @@ class DOC {
 
   //4. DELETE
   static findAndRemove() {
-    console.warn('findAndRemove is Deprecated: use findOneAndDelete instead')
+    throw new Error('findAndRemove is Deprecated: use findOneAndDelete instead')
   }
   static remove() {
-    console.warn('remove is Deprecated: use deleteOne, deleteMany or bulkWrite')
+    throw new Error('remove is Deprecated: use deleteOne, deleteMany or bulkWrite')
   }
   static findOneAndDelete(filter, options) {
     this._checkDBExistence()
