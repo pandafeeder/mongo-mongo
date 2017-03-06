@@ -12,6 +12,11 @@ describe('test for class\'s CURD opeartion', function() {
   describe('#class\'s insertion', function() {
     let uri = 'mongodb://localhost:27017/data'
     let db = new DB(uri)
+    it('this should throw error when using deprecated insert function', function() {
+      assert.throws(() => {
+        Book1.insert()
+      }, Error)
+    })
     it('this should successfully insert a doc into database', function(done) {
       Books1.setDB(db)
       Books1.insertOne({
@@ -37,5 +42,34 @@ describe('test for class\'s CURD opeartion', function() {
         done()
       })
     })
+  })
+  describe('#class\'s update', function() {
+    let uri = 'mongodb://localhost:27017/data'
+    let db = new DB(uri)
+    it('this should throw error when using deprecated findAndModify function', function() {
+      assert.throws(() => {
+        Books1.findAndModify()
+      })
+    })
+    it('this should find doc with title1, and replaced with {title: "title1_u", author: "author1_u", publish: new Date(2007), keywords:["keyword1_u"], price:21.6}', function(done) {
+      Books1.setDB(db)
+      Books1.replaceOne({title: "title1"}, {title: "title1_u", author: "author1_u", publish: new Date(2007), keywords:["keyword1_u"], price:21.6}).then(r => {
+        assert.ok(r.modifiedCount === 1)
+        assert.ok(r.matchedCount === 1)
+        done()
+      })
+    })
+    it('this should successfully update a doc where title is title2, updating field author from author2 to author2_u', function(done) {
+      Books1.updateOne({title: 'title2'}, {$set: {author: 'author2_u'}})
+        .then(r => {
+          assert.ok(r.result.ok === 1)
+          done()
+        })
+    })
+    it('this should throw error, when update argument to updateOne can\'t pass schema defination', function() {
+      assert.throws(() => {
+       Books1.updateOne({title: 'title3'}, {price: 30})
+      })
+   })
   })
 })

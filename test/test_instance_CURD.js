@@ -128,8 +128,8 @@ describe('test for instance\' CURD opeartion', function() {
   //  })
   //})
   describe('static class methods for CURD', function() {
-    it('findOneAndNew should return a newly created instance, then update it', function(done) {
-      Books1.findOneAndNew({title: 'Conversation in the Cathedral'}).then(obj => {
+    it('findOne should return a newly created instance, then update it', function(done) {
+      Books1.findOne({title: 'Conversation in the Cathedral'}).then(obj => {
         assert.ok(obj.__saved === true)
         obj.price = 40.5
         obj.save().then(r => {
