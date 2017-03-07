@@ -554,10 +554,10 @@ class DOC {
    * return Promise which resolve result param of insertOne's callback 
    * reject error param of insertOne's callback
    */
-  createIndex(indexDefination, option) {
+  createIndex(indexDefination, options) {
     return new Promise((resolve, reject) => {
       this.constructor.getCollection(coll => {
-        coll.createIndex(indexDefination, option, (err, result) => {
+        coll.createIndex(indexDefination, options, (err, result) => {
           if (err) reject(err)
           resolve(result)
         })
@@ -812,12 +812,12 @@ class DOC {
     })
   }
 
-  static findOneNative(query, option) {
+  static findOneNative(query, options) {
     this._checkDBExistence()
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
         db.collection(this.prototype.__collection)
-          .findOne(query, option)
+          .findOne(query, options)
           .then(doc => {
             resolve(doc)
           })
@@ -850,7 +850,7 @@ class DOC {
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
         db.collection(this.prototype.__collection)
-          .deleteOne(filter, option)
+          .deleteOne(filter, options)
           .then(result => {
             resolve(result)
           })
@@ -863,7 +863,7 @@ class DOC {
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
         db.collection(this.prototype.__collection)
-          .deleteMany(filter, option)
+          .deleteMany(filter, options)
           .then(result => {
             resolve(result)
           })
@@ -890,7 +890,7 @@ class DOC {
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
         db.collection(this.prototype.__collection)
-          .findOneAndDelete(filter, option)
+          .findOneAndDelete(filter, options)
           .then(result => {
             let obj = new this(result.value)
             resolve(obj)
@@ -901,12 +901,12 @@ class DOC {
   }
 
   //native driver's method
-  static findOneAndDeleteNative(filter, option) {
+  static findOneAndDeleteNative(filter, options) {
     this._checkDBExistence()
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB(db => {
         db.collection(this.prototype.__collection)
-          .findOneAndDelete(filter, option)
+          .findOneAndDelete(filter, options)
           .then(result => {
             resolve(result)
           })
@@ -915,6 +915,67 @@ class DOC {
     })
   }
 
+  //AGGREGATE
+  static aggregate(pipeline, options) {
+    this._checkDBExistence()
+    return new Promise((resolve, reject) => {
+      this.prototype.__db.getDB(db => {
+        if (options.cursor) {
+          resolve(db.collection(this.prototype.__collection).aggregate(pipeline, options))
+        } else {
+          db.collection(this.prototype.__collection).aggregate(pipeline, options, (err, result) => {
+            if (err) reject(err)
+            resolve(result)
+          })
+        }
+      })
+    }
+  }
+  static mapReduce(map, reduce, options) {
+    this._checkDBExistence()
+    return new Promise((resolve, reject) => {
+      this.prototype.__db.getDB(db => {
+        db.collection(this.prototype.__collection).mapReduce(map, reduce, options, (err, result) => {
+          if (err) reject(err)
+          resolve(result)
+        })
+      })
+    })
+  }
+  static count(query, options) {
+    this._checkDBExistence()
+    return new Promise((resolve, reject) => {
+      this.prototype.__db.getDB(db => {
+        db.collection(this.prototype.__collection).count(query, options, (err, result) => {
+          if (err) reject(err)
+          resolve(result)
+        })
+      })
+    })
+ }
+  static distinct(key, query, options) {
+    this._checkDBExistence()
+    return new Promise((resolve, reject) => {
+      this.prototype.__db.getDB(db => {
+        db.collection(this.prototype.__collection).distinct(key, query, options, (err, result) => {
+          if (err) reject(err)
+          resolve(result)
+        })
+      })
+    })
+  }
+  //BULKWRITE
+  static bulkWrite(operations, options) {
+    this._checkDBExistence()
+    return new Promise((resolve, reject) => {
+      this.prototype.__db.getDB(db => {
+        db.collection(this.prototype.__collection).bulkWrite(operations, options, (err, result) => {
+          if (err) reject(err)
+          resolve(result)
+        })
+      })
+    })
+  }
 }
 
 module.exports = exports = DOC
