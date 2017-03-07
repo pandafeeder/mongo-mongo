@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test_no_coverage": "mocha",
-    "test": "nyc --reporter=html --reporter=text --reporter=lcov _mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "compile": "babel src -d lib"
+    "test": "nyc --reporter=html --reporter=text --reporter=lcov _mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",
@@ -20,18 +19,13 @@
   },
   "homepage": "https://github.com/pandafeeder/mongo-mongo#readme",
   "dependencies": {
-    "babel-runtime": "^6.20.0",
     "co": "^4.6.0",
+    "mongodb": "^2.2.16",
     "thunky": "^1.0.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-polyfill": "^6.20.0",
-    "babel-preset-env": "^1.1.8",
     "coveralls": "^2.11.16",
     "mocha": "^3.2.0",
-    "mongodb": "^2.2.16",
     "muk": "^0.5.3",
     "nyc": "^10.0.0"
   }
