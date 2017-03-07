@@ -929,7 +929,7 @@ class DOC {
           })
         }
       })
-    }
+    })
   }
   static mapReduce(map, reduce, options) {
     this._checkDBExistence()
