@@ -1,5 +1,5 @@
 const assert = require('assert')
-const DB = require('../src/db')
+const DB = require('..').DB
 const Db = require('mongodb').Db
 
 describe('test for DB class', function() {

@@ -1,5 +1,5 @@
 'ues strict'
-const DOC = require('../src').DOC
+const DOC = require('..').DOC
 
 class Address extends DOC {
   constructor(data) {

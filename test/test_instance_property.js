@@ -1,7 +1,7 @@
 const assert = require('assert')
-const DB = require('../src').DB
-const types = require('../src').types
-const DOC = require('../src').DOC
+const DB = require('..').DB
+const types = require('..').types
+const DOC = require('..').DOC
 const Books1 = require('./books1')
 const Books2 = require('./books2')
 const ObjectID = require('mongodb').ObjectID
@@ -73,11 +73,6 @@ describe('test for doc instance:', function() {
       it('this should throw error, when title is not string', function() {
         assert.throws(function() {
           let book = new Books1({title: 2666, publish: new Date()})
-        }, Error)
-      })
-      it('this should throw error, when price is not float', function() {
-        assert.throws(function() {
-          let book = new Books1({title: '2666', price: 11, publish: new Date()})
         }, Error)
       })
       it('this should throw error, when price doesn\'t pass custom validator', function() {

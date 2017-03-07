@@ -1,7 +1,7 @@
 'use strict'
-const DB = require('../src').DB
-const types = require('../src').types
-const DOC = require('../src').DOC
+const DB = require('..').DB
+const types = require('..').types
+const DOC = require('..').DOC
 const uri = 'mongodb://localhost:27017/data'
 const db = new DB(uri)
 

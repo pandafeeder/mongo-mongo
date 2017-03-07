@@ -1,7 +1,7 @@
 const assert = require('assert')
-const DB = require('../src').DB
-const types = require('../src').types
-const DOC = require('../src').DOC
+const DB = require('..').DB
+const types = require('..').types
+const DOC = require('..').DOC
 const Books1 = require('./books1')
 const Books2 = require('./books2')
 const ObjectID = require('mongodb').ObjectID
@@ -68,7 +68,7 @@ describe('test for class\'s CURD opeartion', function() {
     })
     it('this should throw error, when update argument to updateOne can\'t pass schema defination', function() {
       assert.throws(() => {
-       Books1.updateOne({title: 'title3'}, {price: 30})
+       Books1.updateOne({title: 'title3'}, {price: 101})
       })
    })
   })
