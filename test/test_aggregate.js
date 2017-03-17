@@ -39,6 +39,7 @@ describe('Test for aggregation functions', function() {
   })
 
   it('populate docs first', function(done) {
+    this.timeout(5000)
     db.getDB(db => {
       let many = []
       for (let i = 66660000; i < 66670000; i++) {
@@ -62,6 +63,7 @@ describe('Test for aggregation functions', function() {
   })
 
   it('#1.test for aggregate, it just calls native\'s aggregate', function(done) {
+    this.timeout(5000)
     Phone.aggregate(
         [
           {$match: {'components.area': 21}},
@@ -85,6 +87,7 @@ describe('Test for aggregation functions', function() {
     })
   })
   it('#3.test for count, it just calls native\'s count', function(done) {
+    this.timeout(5000)
     Phone.count({}).then(r => {
       assert.equal(r, 10000)
       done()
