@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test_no_coverage": "mocha",
-    "test": "nyc --reporter=html --reporter=text --reporter=lcov _mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "test": "nyc --reporter=html --reporter=text --reporter=lcov _mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "test_no_upload": "nyc --reporter=html --reporter=text _mocha",
+    "eslint": "eslint src"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,9 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.16",
+    "eslint": "^3.17.1",
+    "eslint-config-airbnb-base": "^11.1.1",
+    "eslint-plugin-import": "^2.2.0",
     "mocha": "^3.2.0",
     "muk": "^0.5.3",
     "nyc": "^10.0.0"
