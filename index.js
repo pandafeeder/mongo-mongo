@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
-const DOC = require('./src/doc')
-const DB = require('./src/db')
-const types = require('./src/types')
+const DOC = require('./src/doc');
+const DB = require('./src/db');
+const types = require('./src/types');
 
-module.exports = exports = {
-  DOC: DOC,
-  DB: DB,
-  types: types
-}
+module.exports = {
+  DOC,
+  DB,
+  types,
+};
