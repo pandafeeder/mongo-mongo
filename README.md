@@ -87,33 +87,35 @@ book.update()
 | Read and Update | getter + update | findOneAndReplace | findOneAndReplaceNative |
 | Read and Delete | getter + delete | findOneAndDelete | findOneAndDeleteNative |
 
-**save**
-**getter/setter**
-**update**
-**delete**
-**insertOne**
-**insertMany**
-**insertOneNative**
-**insertManyNative**
-**find**
-**findOne**
-**findOneNative**
-**updateOne**
-**updateOneNative**
-**replaceOne**
-**replaceOneNative**
-**updateMany**
-**updateManyNative**
-**deleteOne**
-**deleteOneNative**
-**deleteMany**
-**deleteManyNative**
-**findOneAndUpdate**
-**findOneAndUpdateNative**
-**findOneAndReplace**
-**findOneAndReplaceNative**
-**findOneAndDelete**
-**findOneAndDeleteNative**
+| operation |
+| ------ |
+| save |
+| getter/setter |
+| update |
+| delete |
+| insertOne |
+| insertMany |
+| insertOneNative |
+| insertManyNative |
+| find |
+| findOne |
+| findOneNative |
+| updateOne |
+| updateOneNative |
+| replaceOne |
+| replaceOneNative |
+| updateMany |
+| updateManyNative |
+| deleteOne |
+| deleteOneNative |
+| deleteMany |
+| deleteManyNative |
+| findOneAndUpdate |
+| findOneAndUpdateNative |
+| findOneAndReplace |
+| findOneAndReplaceNative |
+| findOneAndDelete |
+| findOneAndDeleteNative |
 
 
 
