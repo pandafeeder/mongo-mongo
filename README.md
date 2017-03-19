@@ -5,25 +5,25 @@
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver, inspired by Django db*
 
 ### features
-- Object oriented
-- schema constrain
-- promise based
-- decorated class mehod
-- native driver function exposed
+- Object oriented: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.
+- schema: support type constrain, unique, sparse, default and you can custom an validator for a field 
+- promise based: all operation is wrapped in an promise.
+- decorated class mehod: class methods expose all CRUD operations with additional customization like data checking against schema defination and so like.
+- native driver function exposed: you can also directly use offical driver's function easily
 
-## required
+### required
 node version >= 6
-## installation
+### installation
 ```npm install --save mongo-mongo```
-## content
+### content
 - <a href="#db-class">DB class</a>
 - <a href="#schema-defination">schema defination</a>
 - <a href="#instance-method">instance method</a>
 - <a href="#class-method">class method</a>
 - <a href="#native-driver-functions">native driver functions</a>
 - <a href="#edge-cases">edge cases</a>
-
-## a quick glance
+- <a href="#crud-operation">CRUD operation</a>
+### a quick glance
 ```javascript
 const { DOC, DB, types } = require('mongo-mongo')
 class Book extends DOC {
@@ -59,26 +59,69 @@ book.update()
 ```
 
 
+### DB class
 
-## CURD operation
-| operatrion | instance | class | native driver |
+### schema defination
+
+### instance method
+
+### class method
+
+### native driver functions
+
+### edge cases
+
+### CRUD operation
+| operatrion | instance method | class method | native driver(via class method) |
 | ------ | ------ | ------ | ----- |
 | Create |  save  | insertOne | insertOneNative |
+| Create |  save  | insertMany | insertManyNative |
+| Read   |  getter | find      | find        |
+| Read   |  getter | findOne   | findOneNative |
 | Update |  setter + update | updateOne | updateOneNative |
-| Read   |  getter | findOne | findOneNative |
+| Update |  setter + update | replaceOne | replaceOneNative |
+| Update |  setter + update | updateMany | updateManyNative |
 | Delete |  delete | deleteOne | deleteOneNative |
+| Delete |  delete | deleteMany | deleteManyNative |
+| Read and Update | getter + update | findOneAndUpdate | findOneAndUpdateNative |
+| Read and Update | getter + update | findOneAndReplace | findOneAndReplaceNative |
+| Read and Delete | getter + delete | findOneAndDelete | findOneAndDeleteNative |
 
-## DB class
+**save**
+**getter/setter**
+**update**
+**delete**
+**insertOne**
+**insertMany**
+**insertOneNative**
+**insertManyNative**
+**find**
+**findOne**
+**findOneNative**
+**updateOne**
+**updateOneNative**
+**replaceOne**
+**replaceOneNative**
+**updateMany**
+**updateManyNative**
+**deleteOne**
+**deleteOneNative**
+**deleteMany**
+**deleteManyNative**
+**findOneAndUpdate**
+**findOneAndUpdateNative**
+**findOneAndReplace**
+**findOneAndReplaceNative**
+**findOneAndDelete**
+**findOneAndDeleteNative**
 
-## schema defination
 
-## instance method
 
-## class method
 
-## native driver functions
 
-## edge cases
+
+
+
 
 
 when new without arguments, default value will still be valid
