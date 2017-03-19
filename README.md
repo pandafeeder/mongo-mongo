@@ -16,12 +16,13 @@ node version >= 6
 ## installation
 ```npm install --save mongo-mongo```
 ## content
-- DB class
-- schema defination
-- instance method
-- class method
-- native driver functions
-- edge cases
+- <a href="#db-class">DB class</a>
+- <a href="#schema-defination">schema defination</a>
+- <a href="#instance-method">instance method</a>
+- <a href="#class-method">class method</a>
+- <a href="#native-driver-functions">native driver functions</a>
+- <a href="#edge-cases">edge cases</a>
+
 ## a quick glance
 ```javascript
 const { DOC, DB, types } = require('mongo-mongo')
