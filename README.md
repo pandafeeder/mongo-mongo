@@ -88,10 +88,10 @@ book.save()
 
 | operation               | called-via  |           explaination         |  exmaple |
 | ------                  | ------      |              ------            |  ------  |
-| save                    | instance    | insert instance's doc data into db, return promise | ```book.save()```  |
+| save                    | instance    | insert instance's doc data into db, return promise | ```book.save().then(r => console.log('saved'))```  |
 | getter/setter           | instance    | get/set instance's data field      | ```book.price; book.price = 20``` |
-| update                  | instance    | update instance's data into db, return promise | ```book.update()```    |
-| delete                  | instance    | delete instance's data from db, return promise | ```book.delete()```    |
+| update                  | instance    | update instance's data into db, return promise | ```book.update().then(r => console.log('updated'))```    |
+| delete                  | instance    | delete instance's data from db, return promise | ```book.delete().then(r => console.log('deleted'))```    |
 | insertOne               | class       | insert doc into db, have the ability of checking doc data against schema defination, return primose | ```Book.insertOne({title: 'Last Evenings on Earth', publish: new Date(2007,3,30)}).then(r => console.log('inserted'))``` | 
 | insertMany              | class       | insert many docs into db, have the ability of checking docs' data against schema defination, return promise | ```Book.insertMany([{title: 'title1'},{title: 'title2'}]).then(r => console.log('inserted'))```|
 | insertOneNative         | class       | call native driver's insertOne, doesn't check data's validation, return promise | ```Book.insertOne({title: 'title insert by native driver'}).then(r => console.log('inserted'))``` |
