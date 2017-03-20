@@ -86,16 +86,16 @@ book.save()
 | Read and Update | getter + update | findOneAndReplace| findOneAndReplaceNative|
 | Read and Delete | getter + delete | findOneAndDelete | findOneAndDeleteNative |
 
-| operation               | called via  |           explaination         |  exmaple |
+| operation               | called-via  |           explaination         |  exmaple |
 | ------                  | ------      |              ------            |  ------  |
 | save                    | instance    | insert instance's doc data into db, return promise | ```book.save()```  |
 | getter/setter           | instance    | get/set instance's data field      | ```book.price; book.price = 20``` |
 | update                  | instance    | update instance's data into db, return promise | ```book.update()```    |
 | delete                  | instance    | delete instance's data from db, return promise | ```book.delete()```    |
-| insertOne               | class       | insert doc into db, have the ability of checking doc data against schema defination, return primose | ```Book.insertOne({title: 'Last Evenings on Earth', publish: new Date(2007,3,30)})``` | 
-| insertMany              | class       | insert many docs into db, have the ability of checking docs' data against schema defination, return promise | ```Book.insertMany([{title: 'title1'},{title: 'title2'}])```|
-| insertOneNative         | class       | call native driver's insertOne, doesn't check data's validation, return promise | ```Book.insertOne({title: 'title insert by native driver'})``` |
-| insertManyNative        | class       | call native driver's insertMany, doesn't check data's validation, return promise | ```Book.insertOne([{title: 'title1'},{title: 'title2'}])``` |
+| insertOne               | class       | insert doc into db, have the ability of checking doc data against schema defination, return primose | ```Book.insertOne({title: 'Last Evenings on Earth', publish: new Date(2007,3,30)}).then(r => console.log('inserted'))``` | 
+| insertMany              | class       | insert many docs into db, have the ability of checking docs' data against schema defination, return promise | ```Book.insertMany([{title: 'title1'},{title: 'title2'}]).then(r => console.log('inserted'))```|
+| insertOneNative         | class       | call native driver's insertOne, doesn't check data's validation, return promise | ```Book.insertOne({title: 'title insert by native driver'}).then(r => console.log('inserted'))``` |
+| insertManyNative        | class       | call native driver's insertMany, doesn't check data's validation, return promise | ```Book.insertOne([{title: 'title1'},{title: 'title2'}]).then(r => console.log('inserted'))``` |
 | find                    | class       | call native driver's find, return cursor in a promise | ```Book.find({title: '2666'}).then(cursor => cursor.toArray())``` |
 | findOne                 | class       | call native driver's findOne, return matched doc in a promise | ```Book.findOne({title: '2666'}).then(doc => doc.title === '2666')``` |
 | findOneNative           | class       | same as findOne | ```Book.findOneNative({title: '2666'}).then(doc => doc.title === '2666')```
