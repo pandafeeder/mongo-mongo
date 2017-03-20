@@ -57,7 +57,7 @@ book.save()
 
 
 ### DB class
-Constructed with a mongo connect string and option, it's a wrapper upon native driver's MongoClient. Once a instance is constructed, you can get native driver's db instance via db.getDB(db => console.log('db is a instance of native MongoDb')). The point is getDB returns a thunker which delays the evaluation of a paramless async function and cache the result(thanks to thunky module), that's to say for a specific db instande, it's connected to db server only once, and the afterwards calling just reuse the same db instance.
+Constructed with a mongo connect string and option, it's a wrapper upon native driver's MongoClient. Once a instance is constructed, you can get native driver's db instance via ```db.getDB(db => console.log('db is a instance of native MongoDb'))```. The point is getDB returns a thunker which delays the evaluation of a paramless async function and cache the result(thanks to thunky module), that's to say for a specific db instande, it's connected to db server only once, and the afterwards calling just reuse the same db instance.
 ###### example:
 ```javascript
 const DB = require('mongo-mongo').DB
@@ -101,6 +101,24 @@ yourdoc2_1.name = 'name'
 ```
 
 ### schema defination
+set schema inside constructor via ```this.setSchema({})//schma object```
+###### supported types: 
+- String
+- Number
+- Int
+- Object
+- Boolean
+- Array
+- Date
+- nested document
+ 
+###### supported constrains:
+- type
+- unique
+- default
+- required
+- sparse
+- validator
 
 ### instance method
 
