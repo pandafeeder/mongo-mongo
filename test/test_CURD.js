@@ -10,6 +10,7 @@ const Int = require('..').types.Int
 const DB = require('..').DB
 const Cursor = require('mongodb').Cursor
 const MongoDB = require('mongodb').Db
+const MongoError = require('mongodb').MongoError
 
 describe('Test for all CURD operations', function() {
   before(function(done) {
@@ -111,6 +112,13 @@ describe('instance\'s CURD operation', function() {
         book.update()
           .then(r => {
             assert.ok(r.result.ok === 1)
+            done()
+          })
+      })
+      it('#7.test for update reject error branch', function(done) {
+        book.update()
+          .catch(e => {
+            assert.equal(e.name, 'MongoError')
             done()
           })
       })
@@ -225,6 +233,17 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#6.1.test for class method insertMany reject error branch', function(done) {
+    BookCURD2.insertMany([
+        {title: 'title1_insertMany', price:18, author: author, copies:1000, recommedation:{r1: 'r1'}},
+        {title: 'title2_insertMany', price:19, author: author, copies:1500, recommedation:{r2: 'r2'}},
+        {title: 'title3_insertMany', price:20, author: author, copies:1600, recommedation:{r3: 'r3'}},
+        {title: 'title3_extra',      price:21, author: author, copies:1700, recommedation:{r4: 'r4'}}
+    ], {wtimeout: 1000}).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#7.class method insertOneNative just call native\'s insertOne, no data checking', function(done) {
     BookCURD2.insertOneNative({
       title: 'title_native',
@@ -235,6 +254,14 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#7.1.test for class method insertOneNative reject error branch', function(done) {
+    BookCURD2.insertOneNative({
+      title: 'title_native'
+    }).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#8.class method insertManyNative just call native\'s insertMany, no data checking', function(done) {
     BookCURD2.insertManyNative([
         {title: 'title1_native', price:18, author: author.__data, copies:5000, recommedation:{r1: 'r1'}},
@@ -242,6 +269,16 @@ describe('class\'s CURD operation', function() {
         {title: 'title3_native', price:20, author: author.__data, copies:1600, recommedation:{r3: 'r3'}}
     ]).then( r => {
       assert.ok(r.insertedCount === 3)
+      done()
+    })
+  })
+  it('#8.1.test for class method insertManyNative reject error branch', function(done) {
+    BookCURD2.insertManyNative([
+        {title: 'title1_native', price:18, author: author.__data, copies:5000, recommedation:{r1: 'r1'}},
+        {title: 'title2_native', price:19, author: author.__data, copies:1500, recommedation:{r2: 'r2'}},
+        {title: 'title3_native', price:20, author: author.__data, copies:1600, recommedation:{r3: 'r3'}}
+    ]).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -268,6 +305,18 @@ describe('class\'s CURD operation', function() {
         done()
       })
   })
+  it('#10.1.test for class method replaceOne reject error branch', function(done) {
+      BookCURD2.replaceOne({title: 'title_native_replaceOne'}, 
+        {
+          title: 'title1_native',
+          price: 23,
+          copies: 800
+        }
+      ).catch( e => {
+        assert.ok(e instanceof MongoError)
+        done()
+      })
+  })
   it('#11.class method updateOne should have the ability to check data sanity', function() {
     assert.throws(() => {
       BookCURD2.updateOne(
@@ -276,7 +325,7 @@ describe('class\'s CURD operation', function() {
       )
     }, Error)
   })
-  it('#11.class method updateOne should have the ability to check data sanity and updateOne doc', function(done) {
+  it('#11.1.class method updateOne should have the ability to check data sanity and updateOne doc', function(done) {
     BookCURD2.updateOne(
         {title: 'title1_insertMany'},
         {$set: {price: 25, copies: 1900}}
@@ -285,7 +334,71 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
-  it('#12.class method updateMany should have the ability to chech data sanity', function() {
+  it('#11.2.test for class method updateOne $currentDate operator', function(done){
+    BookCURD2.updateOne(
+        {title: 'title1_insertMany'},
+        {$currentDate: {publish: true}}
+    ).then(r => {
+        assert.ok(r.result.ok === 1)
+        done()
+      })
+  })
+  it('#11.3.test for class method updateOne $push operator', function(done) {
+    BookCURD2.updateOne(
+        {title: 'title1_insertMany'},
+        {$push: {keywords: 'keyword1'}}
+    ).then(r => {
+      assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#11.4.test for class method updateOne $push operator with $each', function(done) {
+    BookCURD2.updateOne(
+        {title: 'title1_insertMany'},
+        {$push: {keywords: {$each: ['keyword2', 'keyword3']}}}
+    ).then(r => {
+      assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#11.5.test for class method updateOne with no operator argumenmt', function(done) {
+    BookCURD2.updateOne(
+        {title: 'title1_insertMany'},
+        {
+          title: 'title1_insertMany_updateOne_with_no_operator',
+          price: 22,
+          copies: 1999
+        }
+    ).then(r => {
+      assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#11.6.test for class method updateOne with no operator argumenmt, when violate schema, should throw error', function() {
+    assert.throws(() => {
+      BookCURD2.updateOne(
+          {title: 'title1_insertMany'},
+          {
+            title: 'title1_insertMany_updateOne_with_no_operator',
+            price: 22,
+            copies: 2999
+          }
+      )
+    }, Error)
+  })
+  it('#11.7.test for class method updateOne reject error branch', function(done) {
+    BookCURD2.updateOne({title: 'title1_native'},
+        {
+          title: 'title2_native', 
+          price:19, 
+          copies:1500, 
+        }
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
+  it('#12.class method updateMany should have the ability to check data sanity', function() {
     assert.throws(() => {
       BookCURD2.updateMany(
           {title: /native/},
@@ -293,12 +406,21 @@ describe('class\'s CURD operation', function() {
       )
     }, Error)
   })
-  it('#13.class method updateMany should have the ability to chech data sanity and updateMany docs', function(done) {
+  it('#13.class method updateMany should have the ability to check data sanity and updateMany docs', function(done) {
     BookCURD2.updateMany(
         {title: /native/},
         {$set: {price:25, copies:1900}}
     ).then(r => {
       assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#13.1.test for class method updateMany reject error branch', function(done) {
+    BookCURD2.updateMany(
+        {title: /native/},
+        {title: 'title_updateMany_reject'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -311,12 +433,30 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#14.1.test for class method replaceOneNative reject error branch', function(done) {
+    BookCURD2.replaceOneNative(
+        {title: 'title1_native'},
+        {title: 'title2_native'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#15.class method updateOneNative just call native function, no data checking', function(done){
     BookCURD2.updateOneNative(
-        {title: '26666'},
+        {title: '2666'},
         {$set: {copies: 3000}}
     ).then(r => {
       assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#15.1.test for class method updateOneNative reject error branch', function(done) {
+    BookCURD2.updateOneNative(
+        {title: 'title1_native'},
+        {$set: {title: 'title2_native'}}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -326,6 +466,15 @@ describe('class\'s CURD operation', function() {
         {$set: {copies: 10000}}
     ).then(r => {
       assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#16.1.test for class method updateManyNative reject error branch', function(done) {
+    BookCURD2.updateManyNative(
+        {title: /native/},
+        {$set: {title: 'title3_native'}}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -346,6 +495,15 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#18.1.test for class method findOneAndReplace reject error branch', function(done) {
+    BookCURD2.findOneAndReplace(
+        {title: 'title1_native'},
+        {title: 'title2_native'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#19.class method findOneAndUpdate should have the ability to check data sanity', function() {
     assert.throws(() => {
       BookCURD2.findOneAndUpdate(
@@ -359,7 +517,16 @@ describe('class\'s CURD operation', function() {
         {title: '2666'},
         {$set: {copies: 1999}}
     ).then(r => {
-      assert.ok(r.copies === 1000)
+      assert.ok(r.copies === 3000)
+      done()
+    })
+  })
+  it('#20.1.test for class method findOneAndUpdate reject error branch', function(done) {
+    BookCURD2.findOneAndUpdate(
+        {title: 'title1_native'},
+        {title: 'title2_native'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -372,6 +539,15 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#21.1.test for class method findOneAndReplaceNative reject error branch', function(done) {
+    BookCURD2.findOneAndReplaceNative(
+        {title: 'title1_native'},
+        {title: 'title2_native'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#22.class method findOneAndUpdateNative just call native function, no data checking', function(done) {
     BookCURD2.findOneAndUpdateNative(
         {title: 'title_native_replaceOne_replaceOneNative_findOneAndReplace_findOndAndReplaceNative'},
@@ -381,11 +557,28 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#22.1.test for class method findOneAndUpdateNative reject error branch', function(done) {
+    BookCURD2.findOneAndUpdateNative(
+        {title: 'title1_native'},
+        {title: 'title2_native'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#23.class method findOne should return matched doc', function(done) {
     BookCURD2.findOne(
         {title: '2666'}
     ).then(obj => {
       assert.ok(obj.title === '2666')
+      done()
+    })
+  })
+  it('#23.1.test for class method findOne reject error branch', function(done) {
+    BookCURD2.findOne(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -405,11 +598,27 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#25.1.test for class method find reject error branch', function(done) {
+    BookCURD2.find(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#26.class method deleteOne should successfully delete a matched doc', function(done) {
     BookCURD2.deleteOne(
         {title: 'title3_native'}
     ).then(r => {
       assert.ok(r.result.ok === 1)
+      done()
+    })
+  })
+  it('#26.1.test for class method deleteOne reject error branch', function(done) {
+    BookCURD2.deleteOne(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -429,15 +638,36 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#28.1.test for class method deleteMany reject error branch', function(done) {
+    BookCURD2.deleteMany(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#29.class method deleteManyNative is the same as deleteMany', function(done) {
     BookCURD2.deleteManyNative(
-        {title: /insertMany/}
+        {title: /[2,3]_insertMany/}
     ).then(r => {
       assert.ok(r.result.ok === 1)
       done()
     })
   })
-  it('#30.class method findOneAndDelete should successfully delete a matched doc, return doc directly', function(done) {
+  // mongodb doesn't support $setOnInsert operator for upateOne and updataMany
+  //it('#30.class method updateOne operator $setOnInsert should successfuly insert a field if unpresent with upsert true', function(done) {
+  //  BookCURD2.insertOne(
+  //    {title: 'testFor$setOnInsert', price:10}
+  //  ).then(r => {
+  //    BookCURD2.updateOne({title: 'testFor$setOnInsert'}, {$setOnInsert: {copies: 1999}}, {upsert: true})
+  //      .then(r => {
+  //        console.log(r)
+  //        assert.ok(r.result.ok === 1)
+  //        done()
+  //      })
+  //  })
+  //})
+  it('#31.class method findOneAndDelete should successfully delete a matched doc, return doc directly', function(done) {
     BookCURD2.findOneAndDelete(
         {title: '2666'}
     ).then(r => {
@@ -445,7 +675,23 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
-  it('#31.class method findOneAndDeleteNative just call native findOneAndDelete', function(done) {
+  it('#31.1.test for class method findOneAndDelete reject error branch', function(done) {
+    BookCURD2.findOneAndDelete(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
+  it('#31.2.test for class method findOneAndDelete reject error branch', function(done) {
+    BookCURD2.findOneAndDelete(
+        {title: '2666'}, {maxTimeMS: '1000'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
+  it('#32.class method findOneAndDeleteNative just call native findOneAndDelete', function(done) {
     BookCURD2.findOneAndDeleteNative(
         {title: /extra/}
     ).then(r => {
@@ -453,5 +699,99 @@ describe('class\'s CURD operation', function() {
       done()
     })
   })
+  it('#32.1.test for class method findOneAndDeleteNative reject error branch', function(done) {
+    BookCURD2.findOneAndDeleteNative(
+        'title'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
+  it('#32.2.test for class method findOneAndDeleteNative reject error branch', function(done) {
+    BookCURD2.findOneAndDeleteNative(
+        {title: '2666'}, {maxTimeMS: '1000'}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
 })
+  describe('Test for createIndex in save function', function() {
+    it('#1.test for createIndex for unique when defined', function(done) {
+      class Test extends DOC {
+        constructor(data) {
+          super(data)
+          this.setSchema({
+            name: {
+              type: String,
+              unique: true,
+            }
+          })
+        }
+        static setCollectionName() {
+          return 'test_for_createIndex1'
+        }
+      }
+      let uri = 'mongodb://localhost:27017/data'
+      let db = new DB(uri)
+      Test.setDB(db)
+      let t = new Test({name: 'TEST'})
+      t.save()
+        .then(r => {
+          assert.ok(r.result.ok === 1)
+          done()
+        })
+    })
+    it('#1.1.test for save reject error branch, this should reject duplicated mongo error', function(done) {
+      class Test extends DOC {
+        constructor(data) {
+          super(data)
+          this.setSchema({
+            name: {
+              type: String,
+              unique: true,
+            }
+          })
+        }
+        static setCollectionName() {
+          return 'test_for_createIndex1'
+        }
+      }
+      let uri = 'mongodb://localhost:27017/data'
+      let db = new DB(uri)
+      Test.setDB(db)
+      let t = new Test({name: 'TEST'})
+      t.save()
+        .catch(e => {
+          assert.ok(e.name === 'MongoError')
+          done()
+        })
+    })
+    it('#2.test for createIndex for sparse when defined', function(done){
+      class Test extends DOC {
+        constructor(data) {
+          super(data)
+          this.setSchema({
+            name: {
+              type: String,
+              sparse: true
+            }
+          })
+        }
+        static setCollectionName() {
+          return 'test_for_createIndex2'
+        }
+      }
+      let uri = 'mongodb://localhost:27017/data'
+      let db = new DB(uri)
+      Test.setDB(db)
+      let t = new Test({name: 'TEST'})
+      t.save()
+        .then(r => {
+          assert.ok(r.result.ok === 1)
+          done()
+        })
+    })
+  })
+
 })

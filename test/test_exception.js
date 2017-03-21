@@ -5,6 +5,7 @@ const Book = require('./Models').Book
 const Author = require('./Models').Author
 const INSTANCES = require('./instances')
 const assert = require('assert')
+const MongoError = require('mongodb').MongoError
 
 describe('test for schema violation', function() {
   it('#1.this should throw error when required field not supplied', function() {
@@ -176,6 +177,24 @@ describe('test for schema violation', function() {
     }
     assert.throws(() => {
       let t = new Test()
+    }, Error)
+  })
+  it('#19.this should throw error when calling delete before saved', function() {
+    assert.throws(() => {
+      let book = new Book()
+      book.delete()
+    }, Error)
+  })
+  it('#20.this should throw error when no db set', function() {
+    class Test extends DOC {
+      constructor(data) {
+        this.setSchema({
+          name: String
+        })
+      }
+    }
+    assert.throws(() => {
+      Test._checkDBExistence()
     }, Error)
   })
 })
@@ -395,12 +414,12 @@ describe('class method exception', function() {
       Test.checkUpdateData({$unset: {canDrinkBeer: ""}}, 'one')
     }, Error)
   })
-  it('#7.this should throw error when $setOnInsert a nested field', function() {
+  it('#7.this should throw error when $setOnInsert is used, since it is not supported', function() {
     assert.throws(() => {
       Test.checkUpdateData({$setOnInsert:{'name.a': 'a'}})
     }, Error)
   })
-  it('#8.this should throw error when $setOnInsert a unique field for updateMany', function() {
+  it('#8.this should throw error when $setOnInsert is used, since it is not supported', function() {
     assert.throws(() => {
       Test.checkUpdateData({$setOnInsert:{hoby: 'football'}}, 'many')
     }, Error)
@@ -410,17 +429,22 @@ describe('class method exception', function() {
       Test.checkUpdateData({$currentDate:{hoby: true}}, 'many')
     }, Error)
   })
-  it('#10.this should throw error when $push a nested field', function() {
+  it('#10.this should throw error when $currentDate is nested', function() {
+    assert.throws(() => {
+      Test.checkUpdateData({$currentDate:{'a.b': true}})
+    }, Error)
+  })
+  it('#11.this should throw error when $push a nested field', function() {
     assert.throws(() => {
       Test.checkUpdateData({$push:{'name.a': 'a'}})
     }, Error)
   })
-  it('#11.this should throw error when calling class\'s insert method which is deprecated', function() {
+  it('#12.this should throw error when calling class\'s insert method which is deprecated', function() {
     assert.throws(() => {
       Book.insert()
     }, Error)
   })
-  it('#12.this should throw error when deprecated update operator used for upateOne', function() {
+  it('#13.this should throw error when deprecated update operator used for upateOne', function() {
     class Test extends DOC {
       constructor(data) {
         super(data)
@@ -437,19 +461,42 @@ describe('class method exception', function() {
       Test.updateOne({copies: 1000}, {$inc: {copies: 100}})
     }, Error)
   })
-  it('#13.this should throw error when deprecated findAndModify used', function() {
+  it('#14.this should throw error when deprecated findAndModify used', function() {
     assert.throws(() => {
       Book.findAndModify()
     }, Error)
   })
-  it('#14.this should throw error when remove findAndModify used', function() {
+  it('#15.this should throw error when remove findAndModify used', function() {
     assert.throws(() => {
       Book.remove()
     }, Error)
   })
-  it('#15.this should throw error when remove findAndRemove used', function() {
+  it('#16.this should throw error when remove findAndRemove used', function() {
     assert.throws(() => {
       Book.findAndRemove()
     }, Error)
+  })
+  it('#17.test for createIndex reject error branch', function(done) {
+    class Test extends DOC {
+      constructor(data) {
+        super(data)
+        this.setSchema({
+          title: String,
+          copies: Int
+        })
+      }
+    }
+    let uri = 'mongodb://localhost:27017/data'
+    let db = new DB(uri)
+    Test.setDB(db)
+    let t = new Test({title: 'title', copies: 22})
+    t.createIndex(
+        'title',
+        {v: '1'}
+    )
+    .catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
   })
 })

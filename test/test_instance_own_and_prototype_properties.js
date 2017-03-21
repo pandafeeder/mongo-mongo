@@ -5,6 +5,7 @@ const INSTANCES = require('./instances')
 const DOC = require('..').DOC
 const Int = require('..').types.Int
 const DB = require('..').DB
+const Collection = require('mongodb').Collection
 
 
 describe('test for doc instance\'s own property and prototype\'s property:', function() {
@@ -127,7 +128,7 @@ describe('test for doc instance\'s own property and prototype\'s property:', fun
 
   /////////////////////
   describe('test for supre(db, data)', function() {
-    it('when no _id in schema, instance\'s __data shoule have a _id with type ObjectID', function() {
+    it('#1.when no _id in schema, instance\'s __data shoule have a _id with type ObjectID', function() {
       class Test extends DOC {
         constructor(db, data) {
           super(db, data)
@@ -142,7 +143,7 @@ describe('test for doc instance\'s own property and prototype\'s property:', fun
       let t = new Test(db, {name:'name', age:10})
       assert.ok(t.__data._id instanceof ObjectID)
     })
-    it('when _id in schema, instance\'s __data shoule have a Int _id', function() {
+    it('#2.when _id in schema, instance\'s __data shoule have a Int _id', function() {
       class Test extends DOC {
         constructor(db, data) {
           super(db, data)
@@ -157,6 +158,43 @@ describe('test for doc instance\'s own property and prototype\'s property:', fun
       let db = new DB(uri)
       let t = new Test(db, {_id:1, name:'name', age:10})
       assert.ok(t.__data._id === 1)
+    })
+    it('#3.when class has setCollectionName defined, its prototype.__collection should set accordingly', function() {
+      class House extends DOC {
+        constructor(data) {
+          super(data)
+          this.setSechma({
+            price: Number
+          })
+        }
+        static setCollectionName() {
+          return 'houses'
+        }
+      }
+      let uri = 'mongodb://localhost:27017/data'
+      let db = new DB(uri)
+      House.setDB(db)
+      assert.equal(House.prototype.__collection, 'houses')
+    })
+    it('#4.class method getCollection should invoke passed callback with argument as db', function(done) {
+      class Test extends DOC {
+        constructor(data) {
+          super(data)
+          this.setSchema({
+            name: String
+          })
+        }
+        static setCollectionName() {
+          return 'test_collection_name'
+        }
+      }
+      let uri = 'mongodb://localhost:27017/data'
+      let db = new DB(uri)
+      Test.setDB(db)
+      Test.getCollection(col => {
+        assert.ok(col instanceof Collection)
+        done()
+      })
     })
   })
 })

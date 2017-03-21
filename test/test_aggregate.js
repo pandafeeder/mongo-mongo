@@ -1,6 +1,7 @@
 const DB = require('..').DB
 const DOC = require('..').DOC
 const assert = require('assert')
+const MongoError = require('mongodb').MongoError
 
 describe('Test for aggregation functions', function() {
   let db = new DB('mongodb://localhost:27017/agg')
@@ -18,8 +19,8 @@ describe('Test for aggregation functions', function() {
     }
   }
   class Component extends DOC {
-    constructor(data) {
-      super(data)
+    constructor(db, data) {
+      super(db, data)
       this.setSchema({
         country: Number,
         area: Number,
@@ -74,6 +75,60 @@ describe('Test for aggregation functions', function() {
       done()
     })
   })
+  it('#1.0.1.test for aggregate reject error branch', function(done) {
+    Phone.aggregate(
+        'aggregate'
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
+  it('#1.1.aggregate with option cursor, should return a cursor', function(done) {
+    Phone.aggregate(
+        [
+        {$match: {'components.area': 21}},
+        {$group: {_id: '$components.prefix', total: {$sum: 1}}}
+        ],
+        {cursor: {batchSize: 1}}
+    ).then(cursor => {
+      cursor.toArray((err, doc) => {
+        assert.deepEqual(doc, [{_id: 6666, total: 10000}])
+        done()
+      })
+    })
+  })
+  it('#1.1.1.test for aggregate with option cursor, error can be caught is cursor\'s callback', function(done) {
+    this.timeout(5000)
+    Phone.aggregate(
+        ['match', 'group'],
+        {cursor: {batchSize: 1000}}
+    ).then(cursor => {
+        cursor.toArray((err, result) => {
+          assert.ok(err instanceof MongoError)
+          done()
+    })})
+  })
+  it('#1.2.test for aggregate with none cursor option', function(done) {
+    Phone.aggregate(
+        [
+        {$match: {'components.area': 21}},
+        {$group: {_id: '$components.prefix', total: {$sum: 1}}}
+        ],
+        {maxTimeMS: 1000}
+    ).then(r => {
+        assert.deepEqual(r, [{_id: 6666, total: 10000}])
+        done()
+    })
+  })
+  it('#1.2.1.test for aggregate with none cursor option reject error branch', function(done) {
+    Phone.aggregate(
+        'wrong argument',
+        {maxTimeMS: 1000}
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#2.test for mapReduce, it just calls native\'s mapReduce', function(done) {
     Phone.mapReduce(
       function() {emit(this.components.area, this.components.prefix)},
@@ -86,6 +141,19 @@ describe('Test for aggregation functions', function() {
       done()
     })
   })
+  it('#2.1.test for mapReduce reject error branch', function(done) {
+    Phone.mapReduce(
+      'mapfunction',
+      'reducefunction',
+      {
+        query: {'components.area': 21},
+        out: "totals"
+      }
+    ).catch(e => {
+      assert.ok(e instanceof MongoError)
+      done()
+    })
+  })
   it('#3.test for count, it just calls native\'s count', function(done) {
     this.timeout(5000)
     Phone.count({}).then(r => {
@@ -93,9 +161,24 @@ describe('Test for aggregation functions', function() {
       done()
     })
   })
+  //
+  //it('#3.1.test for count reject error branch', function(done) {
+  //  Phone.count([1,2,3]).catch(e => {
+  //    console.log(e)
+  //    assert.ok(e instanceof MongoError)
+  //    done()
+  //  })
+  //  .then(r => {console.log(r); done()})
+  //})
   it('#4.test for distinct, it just calls native\'s aggregate', function(done) {
     Phone.distinct('components.area').then(r => {
       assert.deepEqual(r, [21])
+      done()
+    })
+  })
+  it('#4.1.test for distict reject error branch', function(done) {
+    Phone.distinct({wrongarg:1}).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
@@ -105,6 +188,14 @@ describe('Test for aggregation functions', function() {
         {insertOne: {document: {a:2}}}
     ]).then(r => {
       assert.ok(r.ok === 1)
+      done()
+    })
+  })
+  it('#5.1.test for bulkWrite reject error branch', function(done) {
+    Phone.bulkWrite([
+        'wrong argument'
+    ]).catch(e => {
+      assert.ok(e instanceof MongoError)
       done()
     })
   })
