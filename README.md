@@ -5,11 +5,11 @@
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
 ### features
-- __Object based__: *an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.*
-- __schema__: *support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field*
-- __promise based__: *all operation return promise.*
-- __decorated class mehod__: *class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for __findOneAndRepacle__ __findOneAndUpdate__ __findOneAndDelete__ instead of a result (which you have to use result.value to get the doc in native way).*
-- __native driver function exposed__: *you can also directly use offical driver's function via class methods whose name appended by Native or use constructed db instance from DB class*
+- __Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.__
+- __schema: support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field.__
+- __promise based: all operation return promise.__
+- __decorated class mehod: class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for *findOneAndRepacle* *findOneAndUpdate* *findOneAndDelete* instead of a result (which you have to use result.value to get the doc in native way).__
+- __native driver function exposed: you can also directly use offical driver's function via class methods whose name appended by Native or use constructed db instance from DB class.__
 
 ### required
 node version >= 6
@@ -114,7 +114,7 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 ###### supported types: 
 - String
 - Number
-- Int: *you need to import types and refer Int by types.Int ```const Int = require('mongo-mongo').types.Int```*
+- Int: *you need to import types and refer Int via types ```const Int = require('mongo-mongo').types.Int```*
 - Object
 - Boolean
 - Array
@@ -139,14 +139,15 @@ class Book extends DOC {
     super(data)
     this.setSchema({
       title: {type: String, required: true},
-      //embedded document
+      //for nested document type, use string
       author: 'Author',
       publish: Date,
       created: {type: Date, default: new Date()},
       price: Number,
       copies: {type: Int, validator: v => (v>100 && v<2000)},
-      //embedded document of plain object
+      // embedded document as plain object
       recommedation: {type: Object, unique: true, sparse: true},
+      // for Array, you can use Array, [], or [INNER_TYPE] as type constrain
       keywords: [String],
       soldout: Boolean,
     })
@@ -163,6 +164,7 @@ let author = new Author({
   married: true
 })
 
+// default value of created field will be added automatically since it's not supplied
 let book = new Book({
   title: '2666',
   author: author,
@@ -179,10 +181,10 @@ let book = new Book({
 ```
  
 ###### supported constrains:
-- type: define a field's type, if you only want type constrain, use *fieldName: TYPE* for short
+- type: define a field's type, if you only want type constrain, use *```fieldName: TYPE```* for short
 - unique: this will create a index by calling mongodb's native ```createIndex('yourFieldName', {unique: true})``` once for a DOC class
 - default: when no value supplied, default will be used
-- required: throw error when construct a new instance with data argument without required field or throw error when calling save if you construct instance without data argument
+- required: throw error when construct a new instance with data argument but no required field supplied or throw error when calling save if you construct instance without data argument
 - sparse: this will create a index by calling mongodb's native ```createIndex('yourFieldName', {sparse: true})``` once for a DOC class
 - validator: this must be a function which return boolean
 
