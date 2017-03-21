@@ -5,10 +5,10 @@ const co = require('co');
 const types = require('./types');
 
 const unsupportedUpdateOperator = [
-  '$inc', '$mul', '$rename', '$min', '$max', '$addToSet',
+  '$inc', '$mul', '$rename', '$min', '$max', '$addToSet', '$setOnInsert',
 ];
 const supportedUpdateOperator = [
-  '$set', '$unset', '$setOnInsert', '$currentDate', '$pop', '$pullAll', '$pull', '$push',
+  '$set', '$unset', '$currentDate', '$pop', '$pullAll', '$pull', '$push',
 ];
 const deprecatedUpdateOperator = ['$pushAll'];
 /**
@@ -53,7 +53,7 @@ class DOC {
         this.__id = this.__data._id;
       }
     } else if (arg.length === 2) {
-      if (!(arg[0] instanceof DB)) {
+      if (arg[0] && !(arg[0] instanceof DB)) {
         throw new Error('your first argument to super is not an DB instance');
       } else {
         proto.__db = proto.__db || arg[0];
@@ -110,10 +110,19 @@ class DOC {
 
   _packProtoProperties() {
     const proto = Object.getPrototypeOf(this);
-    proto.__collection = proto.__collection ||
-        this.constructor.setCollectionName
-          ? this.constructor.setCollectionName()
-          : this.constructor.name.toLowerCase();
+
+    // proto.__collection = proto.__collection ||
+    //     this.constructor.setCollectionName
+    //       ? this.constructor.setCollectionName()
+    //       : this.constructor.name.toLowerCase();
+
+    if (!proto.__collection) {
+      if (this.constructor.setCollectionName) {
+        proto.__collection = this.constructor.setCollectionName();
+      } else {
+        proto.__collection = this.constructor.name.toLowerCase();
+      }
+    }
 
     proto.__schema = proto.__schema || {};
     proto.__requiredButNoDefault = proto.__requiredButNoDefault || [];
@@ -218,17 +227,18 @@ class DOC {
             throw new Error('some or one keys in $unset operator is set to be requred, you can\'t remove them/it');
           }
         }
-        if (e === '$setOnInsert') {
-          if (Object.keys(update[e]).some(k => reg.test(k))) {
-            throw new Error('mongo-mongo\'s updateOne doesn\'t support nested obj, consider updateOneNative please');
-          }
-          Object.keys(update[e]).forEach((k) => {
-            if ((type === 'many') && this.prototype.__unique.indexOf(k) > -1) {
-              throw new Error(`${k} is set to be unique in schema, you can't $setOnInsert it in updateMany`);
-            }
-            updateObj[k] = update[e][k];
-          });
-        }
+        // mongodb js doesn't support $setOnInsert operator on updateOne and updateMany
+        // if (e === '$setOnInsert') {
+        //   if (Object.keys(update[e]).some(k => reg.test(k))) {
+        //     throw new Error('mongo-mongo\'s updateOne doesn\'t support nested obj, consider updateOneNative please');
+        //   }
+        //   Object.keys(update[e]).forEach((k) => {
+        //     if ((type === 'many') && this.prototype.__unique.indexOf(k) > -1) {
+        //       throw new Error(`${k} is set to be unique in schema, you can't $setOnInsert it in updateMany`);
+        //     }
+        //     updateObj[k] = update[e][k];
+        //   });
+        // }
         if (e === '$currentDate') {
           if (Object.keys(update[e]).some(k => reg.test(k))) {
             throw new Error('mongo-mongo\'s updateOne doesn\'t support nested obj, consider updateOneNative please');
@@ -248,7 +258,7 @@ class DOC {
             if (Object.prototype.hasOwnProperty.call(update[e][k], '$each')) {
               updateObj[k] = update[e][k].$each;
             } else {
-              updateObj[k] = update[e][k];
+              updateObj[k] = [update[e][k]];
             }
           });
         }
@@ -401,15 +411,23 @@ class DOC {
     proto.__defined = true;
   }
 
-  /** set prototype's collection property
+  /** get prototype's collection name, since this is instance method, proto.__collection must have been set
    */
   getCollectionName() {
     // same doc class should share same collection name too
     const proto = Object.getPrototypeOf(this);
-    proto.__collection =
-        this.constructor.setCollectionName
-          ? this.constructor.setCollectionName()
-          : this.constructor.name.toLowerCase();
+    // proto.__collection =
+    //     this.constructor.setCollectionName
+    //       ? this.constructor.setCollectionName()
+    //       : this.constructor.name.toLowerCase();
+
+    // if (!proto.__collection) {
+    //   if (this.constructor.setCollectionName) {
+    //     proto.__collection = this.constructor.setCollectionName();
+    //   } else {
+    //     proto.__collection = this.constructor.name.toLowerCase();
+    //   }
+    // }
     return proto.__collection;
   }
 
@@ -418,13 +436,14 @@ class DOC {
    */
   static getCollection(callback) {
     const proto = this.prototype;
-    if (!proto.__collection) {
-      if (this.setCollectionName) {
-        this.setCollectionName();
-      } else {
-        this.name.toLowerCase();
-      }
-    }
+    // setDB will do this part
+    // if (!proto.__collection) {
+    //   if (this.setCollectionName) {
+    //     proto.__collection = this.setCollectionName();
+    //   } else {
+    //     proto.__collection = this.name.toLowerCase();
+    //   }
+    // }
     if (!proto.__db) { throw new Error(`you haven't set db yet. use ${this.name}.setDB(db) to set one`); }
     proto.__db.getDB((db) => {
       callback(db.collection(proto.__collection));
@@ -483,7 +502,8 @@ class DOC {
       this.__saved = true;
       const self = this;
       const proto = Object.getPrototypeOf(this);
-      if (!proto.__collection) this.getCollectionName();
+      // this if branch will never occur since save is call via instance which construct procedure will set __collction
+      // if (!proto.__collection) this.getCollectionName();
       const inited = proto.__inited;
       if (!self.__checked) {
         self.initCheck();
@@ -527,25 +547,25 @@ class DOC {
               const exist = sparseTemp.indexOf(proto.__unique[i]);
               if (exist > -1) {
                 sparseTemp.splice(exist, 1);
-                yield self.createIndex({ [proto.__unique[i]]: 1 }, { unique: true, sparese: true });
+                yield self.createIndex(proto.__unique[i], { unique: true, sparese: true });
               } else {
-                yield self.createIndex({ [proto.__unique[i]]: 1 }, { unique: true });
+                yield self.createIndex(proto.__unique[i], { unique: true });
               }
             }
             if (sparseTemp.length > 0) {
               for (let i = 0; i < sparseTemp.length; i += 1) {
-                yield self.createIndex({ [sparseTemp[i]]: 1 }, { sparse: true });
+                yield self.createIndex(sparseTemp[i], { sparse: true });
               }
             }
           }
           if (proto.__unique.length > 0 && proto.__sparse.length === 0) {
             for (let i = 0; i < proto.__unique.length; i += 1) {
-              yield self.createIndex({ [proto.__unique[i]]: 1 }, { unique: true });
+              yield self.createIndex(proto.__unique[i], { unique: true });
             }
           }
           if (proto.__unique.length === 0 && proto.__sparse.length > 0) {
             for (let i = 0; i < proto.__sparse.length; i += 1) {
-              yield self.createIndex({ [proto.__sparse[i]]: 1 }, { sparse: true });
+              yield self.createIndex(proto.__sparse[i], { sparse: true });
             }
           }
         }
@@ -629,9 +649,9 @@ class DOC {
     if (!this.prototype.__db) this.prototype.__db = db;
     if (!this.prototype.__collection) {
       if (this.setCollectionName) {
-        this.setCollectionName();
+        this.prototype.__collection = this.setCollectionName();
       } else {
-        this.name.toLowerCase();
+        this.prototype.__collection = this.name.toLowerCase();
       }
     }
   }
@@ -885,7 +905,7 @@ class DOC {
 
   // instance method
   delete() {
-    if (!this.__saved) throw new Error(`you have not saved ${this} yet, no need to delete`);
+    if (!this.__saved) throw new Error('you have not saved this object yet, no need to delete');
     return new Promise((resolve, reject) => {
       this.constructor.getCollection((coll) => {
         coll.deleteOne({ _id: this.__id }, (err, result) => {
@@ -941,12 +961,19 @@ class DOC {
     this._checkDBExistence();
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB((db) => {
-        db.collection(this.prototype.__collection)
-          .findOneAndDelete(filter, options)
-          .then((result) => {
-            resolve(result.value);
-          })
-          .catch(e => reject(e));
+        // why try block?
+        // because mongodbjs will throw MongoError before invoking real db function when filter is invalid
+        // this will miss catching the error
+        try {
+          db.collection(this.prototype.__collection)
+            .findOneAndDelete(filter, options)
+            .then((result) => {
+              resolve(result.value);
+            })
+            .catch(e => reject(e));
+        } catch (e) {
+          reject(e);
+        }
       });
     });
   }
@@ -956,12 +983,19 @@ class DOC {
     this._checkDBExistence();
     return new Promise((resolve, reject) => {
       this.prototype.__db.getDB((db) => {
-        db.collection(this.prototype.__collection)
-          .findOneAndDelete(filter, options)
-          .then((result) => {
-            resolve(result);
-          })
-          .catch(e => reject(e));
+        // why try block?
+        // because mongodbjs will throw MongoError before invoking real db function when filter is invalid
+        // this will miss catching the error
+        try {
+          db.collection(this.prototype.__collection)
+            .findOneAndDelete(filter, options)
+            .then((result) => {
+              resolve(result);
+            })
+            .catch(e => reject(e));
+        } catch (e) {
+          reject(e);
+        }
       });
     });
   }
