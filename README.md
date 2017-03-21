@@ -2,14 +2,14 @@
 [![npm version](https://img.shields.io/npm/v/mongo-mongo.svg?style=flat-square)](https://www.npmjs.com/package/mongo-mongo)
 [![Coverage Status](https://coveralls.io/repos/github/pandafeeder/mongo-mongo/badge.svg?branch=master)](https://coveralls.io/github/pandafeeder/mongo-mongo?branch=master)
 
-# __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver, inspired by Django db*
+# __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
 ### features
-- Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.
-- schema: support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field
-- promise based: all operation return promise.
-- decorated class mehod: class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for findOneAndRepacle&findOneAndUpdate&findOneAndDelete instead of a result(which you have to use result.value to get the doc in native way).
-- native driver function exposed: you can also directly use offical driver's function via class or constructed db instance from DB class
+- Object based: *an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.*
+- schema: *support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field*
+- promise based: *all operation return promise.*
+- decorated class mehod: *class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for __findOneAndRepacle__ __findOneAndUpdate__ __findOneAndDelete__ instead of a result (which you have to use result.value to get the doc in native way).*
+- native driver function exposed: *you can also directly use offical driver's function via class methods whose name appended by Native or use constructed db instance from DB class*
 
 ### required
 node version >= 6
@@ -25,6 +25,7 @@ node version >= 6
 - <a href="#native-driver-functions">native driver functions</a>
 - <a href="#edge-cases">edge cases</a>
 - <a href="#crud-operation">CRUD operation</a>
+- <a href="#todo">Todo</a>
 ### a quick glance
 ```javascript
 const { DOC, DB, types } = require('mongo-mongo')
@@ -34,6 +35,7 @@ class Book extends DOC {
         super(data)
         this.setSchema({
             title: {type: String, unique: true},
+            // if only type constrain, use this syntax for short
             publish: Date,
             created: {type: Date, default: new Date},
             copies: {
@@ -43,14 +45,19 @@ class Book extends DOC {
             price: Number
         })
     }
+    // default collection name is lower-cased class name, set it explicitly using below method
     static setCollectionName() {
         return 'books'
     }
 }
 
+// DB eats the same argument as native's MongoClient.connect
 const db = new DB('mongodb://localhost:27017/db')
+// all CURD operation will use the same db instance
 Book.setDB(db)
+// no created supplied, a default new Date will be used
 let book = new Book({title:'2666', publish: new Date(2008,10,10), copies: 5000, price: 12.2})
+// insert data into database
 book.save()
     .then(r => {console.log('saved!')})
     .catch(e => {console.log('something wrong when saving')})
@@ -106,7 +113,7 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 ###### supported types: 
 - String
 - Number
-- Int: you need to import types and refer Int by types.Int ```const Int = require('mongo-mongo').types.Int```
+- Int: *you need to import types and refer Int by types.Int ```const Int = require('mongo-mongo').types.Int```*
 - Object
 - Boolean
 - Array
@@ -171,7 +178,7 @@ let book = new Book({
 ```
  
 ###### supported constrains:
-- type: define a field's type
+- type: define a field's type, if you only want type constrain, use *fieldName: TYPE* for short
 - unique: this will create a index by calling mongodb's native ```createIndex('yourFieldName', {unique: true})``` once for a DOC class
 - default: when no value supplied, default will be used
 - required: throw error when construct a new instance with data argument without required field or throw error when calling save if you construct instance without data argument
