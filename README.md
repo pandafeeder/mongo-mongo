@@ -5,17 +5,18 @@
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver, inspired by Django db*
 
 ### features
-- Object oriented: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.
-- schema: support type constrain, unique, sparse, default and you can custom an validator for a field
+- Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.
+- schema: support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field
 - promise based: all operation is wrapped in an promise.
-- decorated class mehod: class methods expose all CRUD operations with additional customization like data checking against schema defination and so like.
-- native driver function exposed: you can also directly use offical driver's function easily
+- decorated class mehod: class methods expose all CRUD operations with additional customization as data checking against schema defination.
+- native driver function exposed: you can also directly use offical driver's function via class or constructed db instance from DB class
 
 ### required
 node version >= 6
 ### installation
 ```npm install --save mongo-mongo```
 ### content
+- <a href="#a-quick-glance">a quick glance</a>
 - <a href="#db-class">DB class</a>
 - <a href="#constructor">constructor</a>
 - <a href="#schema-defination">schema defination</a>
@@ -62,11 +63,11 @@ Constructed with a mongo connect string and option, it's a wrapper upon native d
 ```javascript
 const DB = require('mongo-mongo').DB
 const db = new DB('mongodb://localhost:27017/data')
-db.getDB(db => {//do whatever you want with db here})
+db.getDB(db => {}) //do whatever you want with db inside arrow function
 ```
 
 ### constructor
-You can use constructor two ways:
+You can use constructor in two ways:
 1. only pass data argument and set db to be used later via class method setDB
 2. pass both db and data arguments
 
@@ -121,12 +122,34 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 - validator
 
 ### instance method
+- retrive or set data field with setter or getter 
+- save 
+- update
+- delete
+- getData
+- addData
 
-### class method
+### decorated class method
+- fireUp
+- checkData
+- getCollection
+- getDB
+- extractPureData
+- setDB
 
 ### native driver functions
 
+### aggregate operation
+- aggregate
+- mapReduce
+- count
+- distinct
+- bulkWrite
+
 ### edge cases
+- class method updateOne/updateMany don't support nested document
+- for Object field, you have to assign new object to trigger __updateField
+- decorated class method will not throw error for undefined data field
 
 ### CRUD operation
 | operatrion | instance method | class method | native driver(via class method) |
@@ -174,21 +197,3 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 | findOneAndDelete        | class       | delete a matched doc and return original doc in a promise | ```Book.findOneAndDelete({title: '2666'}).then(doc => doc.title === '2666')``` |
 | findOneAndDeleteNative  | class       | delete a matched doc and return operation result in a promise | ```Book.findOneAndDelete({title: '2666'}).then(result => result.value.title === '2666')``` |
 
-
-
-
-
-
-
-
-
-
-when new without arguments, default value will still be valid
-
-multi nested
-
-you have to assign new object for Object field to trigger \_\_updatedField
-
-insertManyNative embedded doc
-
-adopted class method only have the ability to check argument data
