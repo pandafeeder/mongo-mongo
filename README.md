@@ -106,7 +106,7 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 ###### supported types: 
 - String
 - Number
-- Int
+- Int: you need to import types and refer Int by types.Int ```const Int = require('mongo-mongo').types.Int```
 - Object
 - Boolean
 - Array
@@ -157,7 +157,7 @@ let author = new Author({
 
 let book = new Book({
   title: '2666',
-  author: author1,
+  author: author,
   publish: new Date(2008,10,10),
   price: 15.2,
   copies: 1500,
@@ -171,29 +171,29 @@ let book = new Book({
 ```
  
 ###### supported constrains:
-- type
-- unique
-- default
-- required
-- sparse
-- validator
+- type: define a field's type
+- unique: this will create a index by calling mongodb's native ```createIndex('yourFieldName', {unique: true})``` once for a DOC class
+- default: when no value supplied, default will be used
+- required: throw error when construct a new instance with data argument without required field or throw error when calling save if you construct instance without data argument
+- sparse: this will create a index by calling mongodb's native ```createIndex('yourFieldName', {sparse: true})``` once for a DOC class
+- validator: this must be a function which return boolean
 
 ### instance method
 - retrive or set data field with setter or getter 
-- save 
-- update
-- delete
-- getData
-- addData
+- save: save your instance's data into database, every instance has a __data property(unenumerable) refer to its doc data
+- update: use setter update your instance's data then use update to update into database
+- delete: delete corresponding doc from database
+- getData: return data object referred by __data property, if there's nested field, the corresponding filed is a instanct of nested DOC
+- addData: you can add multi fields' data using this method
 
 ### decorated class method
-- fireUp
-- checkData
-- getCollection
-- getDB
-- extractPureData
-- setDB
-- setCollectionName
+- fireUp: if you don't want to new any instance and use class method for CRUD only, you need to call fireUp via class first to trigger schema setup phase before any CRUD operation
+- checkData: after schema is set up(either by new a instance or by calling fireUp), you can check argument data against schema defination by calling checkData(data)
+- getCollection: require a callback as parameter and pass the underlying collection instance to callback function
+- getDB: require a callback as parameter and pass the underlying db instance to callback function
+- extractPureData: require your DOC class' instance as parameter, if your argument has nested document, this will extract nested document's __data object and replac extracted data with corresponding field, be aware this method will modify your instance directly
+- setDB: set db instance to use for your DOC class
+- setCollectionName: default collction name for a DOC class is its lower-cased name, you can specify it by define a static method called setCollectionName and return wanted string when declaring your DOC class
 
 ### native driver functions
 
