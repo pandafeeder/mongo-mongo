@@ -96,12 +96,13 @@ class YourDOC2 extends DOC {
     }
 }
 
-// new instance with argument
-let yourdoc1 = new YourDOC1({name: 'name'}); YourDOC1.setDB(db);
+// new instance with argument, setDB else where
+let yourdoc1 = new YourDOC1({name: 'name'}); 
+YourDOC1.setDB(db);
 // laterly newed instance after yourdoc2 don't need db anymore since you've set it 
 let yourdoc2 = new YourDOC2(db, {name: 'name'})
 
-// new instance without argument and set data/db latter
+// new instance without argument and setDB else where
 let yourdoc1_1 = new YourDOC1(); YourDOC1.setDB(db);
 let yourdoc2_1 = new YourDOC2(); YourDOC2.setDB(db);
 // add data via setter, every data field is a setter/getter descriptor of your instance
