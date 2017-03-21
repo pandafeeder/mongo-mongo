@@ -7,8 +7,8 @@
 ### features
 - Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.
 - schema: support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field
-- promise based: all operation is wrapped in an promise.
-- decorated class mehod: class methods expose all CRUD operations with additional customization as data checking against schema defination.
+- promise based: all operation return promise.
+- decorated class mehod: class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for findOneAndRepacle&findOneAndUpdate&findOneAndDelete instead of a result(which you have to use result.value to get the doc in native way).
 - native driver function exposed: you can also directly use offical driver's function via class or constructed db instance from DB class
 
 ### required
@@ -112,6 +112,63 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 - Array
 - Date
 - nested document
+###### example for nested document
+```javascript
+class Author extends DOC {
+  constructor(data) {
+    super(data)
+    this.setSchema({
+      name: {type: String, required: true},
+      born: Date,
+      nationality: [String],
+      married: Boolean
+    })
+  }
+}
+
+class Book extends DOC {
+  constructor(data) {
+    super(data)
+    this.setSchema({
+      title: {type: String, required: true},
+      //embedded document
+      author: 'Author',
+      publish: Date,
+      created: {type: Date, default: new Date()},
+      price: Number,
+      copies: {type: Int, validator: v => (v>100 && v<2000)},
+      //embedded document of plain object
+      recommedation: {type: Object, unique: true, sparse: true},
+      keywords: [String],
+      soldout: Boolean,
+    })
+  }
+  static setCollectionName() {
+    return 'books'
+  }
+}
+
+let author = new Author({
+  name: 'Roberto Bolaño',
+  born: new Date(1953,3,27),
+  nationality: ['Chile'],
+  married: true
+})
+
+let book = new Book({
+  title: '2666',
+  author: author1,
+  publish: new Date(2008,10,10),
+  price: 15.2,
+  copies: 1500,
+  recommedation: {
+    reviewer: 'New York Times',
+    comment: '10 Best Books of 2008'
+  },
+  keywords: ['history', 'novel'],
+  soldout: true
+})
+```
  
 ###### supported constrains:
 - type
@@ -136,6 +193,7 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 - getDB
 - extractPureData
 - setDB
+- setCollectionName
 
 ### native driver functions
 
