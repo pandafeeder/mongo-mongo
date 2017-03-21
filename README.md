@@ -5,11 +5,11 @@
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
 ### features
-- Object based: *an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.*
-- schema: *support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field*
-- promise based: *all operation return promise.*
-- decorated class mehod: *class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for __findOneAndRepacle__ __findOneAndUpdate__ __findOneAndDelete__ instead of a result (which you have to use result.value to get the doc in native way).*
-- native driver function exposed: *you can also directly use offical driver's function via class methods whose name appended by Native or use constructed db instance from DB class*
+- __Object based__: *an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.*
+- __schema__: *support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field*
+- __promise based__: *all operation return promise.*
+- __decorated class mehod__: *class methods expose all CRUD operations with additional customization as data checking against schema defination and directly return doc for __findOneAndRepacle__ __findOneAndUpdate__ __findOneAndDelete__ instead of a result (which you have to use result.value to get the doc in native way).*
+- __native driver function exposed__: *you can also directly use offical driver's function via class methods whose name appended by Native or use constructed db instance from DB class*
 
 ### required
 node version >= 6
@@ -55,7 +55,7 @@ class Book extends DOC {
 const db = new DB('mongodb://localhost:27017/db')
 // all CURD operation will use the same db instance
 Book.setDB(db)
-// no created supplied, a default new Date will be used
+// no created field supplied in argument, a default new Date will be used, this will throw error if any field not satisfying schema defination
 let book = new Book({title:'2666', publish: new Date(2008,10,10), copies: 5000, price: 12.2})
 // insert data into database
 book.save()
@@ -65,30 +65,30 @@ book.save()
 
 
 ### DB class
-Constructed with a mongo connect string and option, it's a wrapper upon native driver's MongoClient. Once a instance is constructed, you can get native driver's db instance via ```db.getDB(db => console.log('db is a instance of native MongoDb'))```. The point is getDB returns a thunker which delays the evaluation of a paramless async function and cache the result(thanks to thunky module), that's to say for a specific db instande, it's connected to db server only once, and the afterwards calling just reuse the same db instance.
+Constructed with a mongo connect string and option, it's a wrapper upon native driver's MongoClient. Once a instance is constructed, you can get native driver's db instance via ```db.getDB(db => console.log('db is a instance of native MongoDb'))```. The point is getDB returns a thunker which delays the evaluation of a paramless async function and cache the result(thanks to thunky module), that's to say for a specific db instande, it'll establish connection to db server only once, and the afterwards calling just reuse the same connection.
 ###### example:
 ```javascript
 const DB = require('mongo-mongo').DB
-const db = new DB('mongodb://localhost:27017/data')
-db.getDB(db => {}) //do whatever you want with db inside arrow function
+const db = new DB('mongodb://localhost:27017/data')//,option as second parameter if any
+db.getDB(db => {}) //do whatever you want with db instance inside arrow function
 ```
 
 ### constructor
 You can use constructor in two ways:
-1. only pass data argument and set db to be used later via class method setDB
+1. only pass data argument and set db later via class method setDB
 2. pass both db and data arguments
 
-both ways support constructing with no argument and set latter
+both ways support constructing with no argument and add data field latter
 ###### example:
 ```javascript
-//1. only pass data to constructor
+// 1. only pass data to constructor
 class YourDOC1 extends DOC {
     constructor(data) {
         super(data)
         this.setSchema({name: String})//define your schema here
     }
 }
-//2. pass db and data to construcotr
+// 2. pass db and data to construcotr
 class YourDOC2 extends DOC {
     constructor(db, data) {
         super(db, data)
@@ -96,14 +96,15 @@ class YourDOC2 extends DOC {
     }
 }
 
-//new instance with argument
+// new instance with argument
 let yourdoc1 = new YourDOC1({name: 'name'}); YourDOC1.setDB(db);
-//laterly newed instance after yourdoc2 don't need db anymore since you've set at first time
+// laterly newed instance after yourdoc2 don't need db anymore since you've set it 
 let yourdoc2 = new YourDOC2(db, {name: 'name'})
 
-//new instance without argument and set data/db latter
+// new instance without argument and set data/db latter
 let yourdoc1_1 = new YourDOC1(); YourDOC1.setDB(db);
 let yourdoc2_1 = new YourDOC2(); YourDOC2.setDB(db);
+// add data via setter, every data field is a setter/getter descriptor of your instance
 yourdoc1_1.name = 'name'
 yourdoc2_1.name = 'name'
 ```
