@@ -4,6 +4,8 @@
 
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
+### 中文
+
 ### features
 - __Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.__
 - __schema: support multi constrain like type, unique, sparse, default, required and you can customize an validator function for a field.__
@@ -115,7 +117,7 @@ set schema inside constructor via ```this.setSchema({})//schma object```
 ###### supported types:
 - String
 - Number
-- Int: *you need to import types and refer Int via types ```const Int = require('mongo-mongo').types.Int```*
+- Int: *refer to Int like so```const Int = require('mongo-mongo').types.Int```*
 - Object
 - Boolean
 - Array
@@ -271,10 +273,12 @@ all following class methods accept the same argument as corresponding native fun
 
 ## 中文
 
+### 特性
+
 ### 目录  
 - <a href="#扫一眼">扫一眼</a>
 - <a href="#DB-类">DB 类</a>
-- <a href="#构造函数">constructor</a>
+- <a href="#构造函数">构造函数</a>
 - <a href="#schema-定义">schema 定义</a>
 - <a href="#实例方法">实例方法</a>
 - <a href="#类方法">类方法</a>
@@ -313,7 +317,7 @@ class Book extends DOC {
 const db = new DB('mongodb://localhost:27017/db')
 // 之后所有的CRUD操作都是复用同一个db实例
 Book.setDB(db)
-// 因为传入参数没有created值，created将使用default设定的new Date,如果传入的参数违法的sechema的定义，将抛出错误
+// 因为传入参数没有created值，created将使用default设定的new Date,如果传入的参数违反schema的定义，将抛出错误
 let book = new Book({title:'2666', publish: new Date(2008,10,10), copies: 5000, price: 12.2})
 // 向database插入数据
 book.save()
@@ -333,37 +337,109 @@ db.getDB(db => {db}) //在箭头函数内得到官方db
 ```
 
 ### 构造函数
-You can use constructor in two ways:
-1. only pass data argument and set db later via class method setDB
-2. pass both db and data arguments
+你可以使用以下两种方法定义构造函数:
+1. 仅传递data形参，然后在其他地方通过setDB类方法来指定要使用的db实例(推荐)
+2. 传递db, data两个形参
 
-both ways support constructing with no argument and add data field latter
-###### example:
+两种方式都支持new实例时，不提供任何参数，稍后再添加数据
+###### 例子:
 ```javascript
-// 1. only pass data to constructor
+// 1. 仅传递data形参
 class YourDOC1 extends DOC {
     constructor(data) {
         super(data)
-        this.setSchema({name: String})//define your schema here
+        this.setSchema({name: String})//定义schema
     }
 }
-// 2. pass db and data to construcotr
+// 2. 传递db和data形参
 class YourDOC2 extends DOC {
     constructor(db, data) {
         super(db, data)
-        this.setSchema({name: String})//define your schema here
+        this.setSchema({name: String})//定义schema
     }
 }
 
-// new instance with argument, setDB else where
+// 带data实参构造实例，用setDB指定要使用的db实例
 let yourdoc1 = new YourDOC1({name: 'name'});
 YourDOC1.setDB(db);
-// laterly newed instance after yourdoc2 don't need db anymore since you've set it
+// 带db和data实参构造实例，之后构造的实例不必再提供db实参，因为第一次已经提供了
 let yourdoc2 = new YourDOC2(db, {name: 'name'})
 
-// new instance without argument and setDB else where
+// 不带任何实参构造实例,用setDB指定要使用的db实例
 let yourdoc1_1 = new YourDOC1(); YourDOC1.setDB(db);
 let yourdoc2_1 = new YourDOC2(); YourDOC2.setDB(db);
-// add data via setter, every data field is a setter/getter descriptor of your instance
+// 通过setter添加数据, 每一个schema中定义的数据都是一个setter/getter描述符
 yourdoc1_1.name = 'name'
 yourdoc2_1.name = 'name'
+
+### schema 定义
+在构造函数内通过来定义```this.setSchema({})//参数为schema对象```schema
+###### 支持的类型:
+- String
+- Number
+- Int: *通过```const Int = require('mongo-mongo').types.Int```来使用Int*
+- Object
+- Boolean
+- Array
+- Date
+- nested document (支持任意层级的嵌套)
+###### nested document 例子
+```javascript
+class Author extends DOC {
+  constructor(data) {
+    super(data)
+    this.setSchema({
+      name: {type: String, required: true},
+      born: Date,
+      nationality: [String],
+      married: Boolean
+    })
+  }
+}
+
+class Book extends DOC {
+  constructor(data) {
+    super(data)
+    this.setSchema({
+      title: {type: String, required: true},
+      //使用字符串来定义 nested document 类型
+      author: 'Author',
+      publish: Date,
+      created: {type: Date, default: new Date()},
+      price: Number,
+      copies: {type: Int, validator: v => (v>100 && v<2000)},
+      // 嵌套纯Object
+      recommedation: {type: Object, unique: true, sparse: true},
+      // 可以使用Array,或[],或[类型]来定义
+      keywords: [String],
+      soldout: Boolean,
+    })
+  }
+  static setCollectionName() {
+    return 'books'
+  }
+}
+
+let author = new Author({
+  name: 'Roberto Bolaño',
+  born: new Date(1953,3,27),
+  nationality: ['Chile'],
+  married: true
+})
+
+// 实参没提供created, created将使用默认值
+let book = new Book({
+  title: '2666',
+  author: author,
+  publish: new Date(2008,10,10),
+  price: 15.2,
+  copies: 1500,
+  recommedation: {
+    reviewer: 'New York Times',
+    comment: '10 Best Books of 2008'
+  },
+  keywords: ['history', 'novel'],
+  soldout: true
+})
+```
+
