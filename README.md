@@ -4,7 +4,7 @@
 
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
-### 中文
+### <a href="中文">中文</a>
 
 ### features
 - __Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.__
@@ -371,6 +371,7 @@ let yourdoc2_1 = new YourDOC2(); YourDOC2.setDB(db);
 // 通过setter添加数据, 每一个schema中定义的数据都是一个setter/getter描述符
 yourdoc1_1.name = 'name'
 yourdoc2_1.name = 'name'
+```
 
 ### schema 定义
 在构造函数内通过来定义```this.setSchema({})//参数为schema对象```schema
