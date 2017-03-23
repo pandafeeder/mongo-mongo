@@ -278,7 +278,7 @@ all following class methods accept the same argument as corresponding native fun
 - __基于对象: 一个对象代表collection中的一个document, 对象拥有CRUD方法，对象的每条data field对应一组setter/getter描述符。__
 - __schema: 支持多种约束:type, unique, sparse, default, required 你也可以自定义validator function.__
 - __返回promise: CRUD操作都返回promise.__
-- __附加功能的类CRUD方法: class除了直接暴露原生的CRUD方法外(要使用原生方法在对应方法名后加Native)，还对inert，update，replace等写操作做了数据有效性检查, *findOneAndRepacle* *findOneAndUpdate* *findOneAndDelete* 方法直接把doc数据包装在promise中返回，而不是像原生方法那样需要访问操作结果的value属性得到doc数据
+- __附加功能的类CRUD方法: class除了直接暴露原生的CRUD方法外(要使用原生方法在对应方法名后加Native)，还对inert，update，replace等写操作做了数据有效性检查, *findOneAndRepacle* *findOneAndUpdate* *findOneAndDelete* 方法直接把doc数据包装在promise中返回，而不是像原生方法那样需要访问操作结果的value属性得到doc数据。__
 
 ### 目录  
 - <a href="#扫一眼">扫一眼</a>
