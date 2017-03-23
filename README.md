@@ -4,7 +4,6 @@
 
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
-### <a href="#中文">中文版</a>
 
 ### features
 - __Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.__
@@ -276,6 +275,10 @@ all following class methods accept the same argument as corresponding native fun
 ## 中文
 
 ### 特性
+- __基于对象: 一个对象代表collection中的一个document, 对象拥有CRUD方法，对象的每条data field对应一组setter/getter描述符。__
+- __schema: 支持多种约束:type, unique, sparse, default, required 你也可以自定义validator function.__
+- __返回promise: CRUD操作都返回promise.__
+- __附加功能的类CRUD方法: class除了直接暴露原生的CRUD方法外(要使用原生方法在对应方法名后加Native)，还对inert，update，replace等写操作做了数据有效性检查, *findOneAndRepacle* *findOneAndUpdate* *findOneAndDelete* 方法直接把doc数据包装在promise中返回，而不是像原生方法那样需要访问操作结果的value属性得到doc数据
 
 ### 目录  
 - <a href="#扫一眼">扫一眼</a>
@@ -455,7 +458,7 @@ let book = new Book({
 - validator: 自定义检查函数，该函数需返回boolean值
 
 ### 实例方法
-- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+- 详细的CRUD操作请参考 <a href="#crud-操作">CRUD operation</a>
 - 取值／赋值使用setter, getter描述符
 - save: 插入实例的data到数据库中，每个实例都有一个__data属性(unenumerable)指向其向关数据
 - update: 使用setter赋新址，然后调用update向数据库发起更新
@@ -465,14 +468,14 @@ let book = new Book({
 
 
 ### 类方法
-- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+- 详细的CRUD操作请参考 <a href="#crud-操作">CRUD operation</a>
 - getCollection: 参数为callback函数，传递给callback函数的参数为mongodb collection实例
 - getDB: 参数为callback函数，传递给callback函数的参数为mongodb db实例
 - setDB: 设置该类所使用的DB实例
 - setCollectionName: 一个类对应的collection name默认为类名全小写，可以通过该函数显式设置collection name
 
 ### 官方原生函数
-- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+- 详细的CRUD操作请参考 <a href="#crud-操作">CRUD operation</a>
 
 ### aggregate操作
 下面所有的操作与原生函数接收的参数完全一致，把结果包在promise中返回
