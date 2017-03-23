@@ -27,6 +27,7 @@ node version >= 6
 - <a href="#native-driver-functions">native driver functions</a>
 - <a href="#edge-cases">edge cases</a>
 - <a href="#crud-operation">CRUD operation</a>
+- <a href="#aggregate-operation">aggregate operation</a>
 - <a href="#todo">Todo</a>
 ### a quick glance
 ```javascript
@@ -209,9 +210,6 @@ let book = new Book({
 
 ### native driver functions
 - for CRUD opeartion, please reder to <a href="#crud-operation">CRUD operation</a>
-- getCollection: require a callback as parameter and pass the underlying collection instance to callback function
-- getDB: require a callback as parameter and pass the underlying db instance to callback function
-- getDB via db instance: this is the save as above except you call it via db instance
 
 ### aggregate operation
 all following class methods accept the same argument as corresponding native function, all result is returned in a promise
@@ -271,7 +269,11 @@ all following class methods accept the same argument as corresponding native fun
 | findOneAndDelete        | class       | delete a matched doc and return original doc in a promise | ```Book.findOneAndDelete({title: '2666'}).then(doc => doc.title === '2666')``` |
 | findOneAndDeleteNative  | class       | delete a matched doc and return operation result in a promise | ```Book.findOneAndDeleteNative({title: '2666'}).then(result => result.value.title === '2666')``` |
 
-## 中文
+### Todo
+- support more types
+- add new class method to do update operation with supporting of all update operator
+
+## 中 文
 
 ### 特性
 
@@ -307,7 +309,7 @@ class Book extends DOC {
             price: Number
         })
     }
-    // 默认的collection的名字为类名的全小写，可以使用下面的方法来显示设置collection名字
+    // 默认的collection的名字为类名的全小写，可以使用下面的方法来显式设置collection名字
     static setCollectionName() {
         return 'books'
     }
@@ -326,9 +328,9 @@ book.save()
 ```
 
 
-### DB class
+### DB 类
 
-DB class包了一层官方的MongoClient.connect, 创建实例的参数与传递给MongoClient.connect的参数一致。构造出实例后可以通过实例方法```db.getDB(db => {})```拿到官方的db实例。getDB实际上返回一个thunker，对于每一个实例，只与db server建立一次链接，以后每次取db的操作，实际上都是在复用之前的db实例。
+DB 类包了一层官方的MongoClient.connect, 创建实例的参数与传递给MongoClient.connect的参数一致。构造出实例后可以通过实例方法```db.getDB(db => {})```拿到官方的db实例。getDB实际上返回一个thunker，对于每一个实例，只与db server建立一次链接，以后每次取db的操作，实际上都是在复用之前的db实例。
 ###### 例子:
 ```javascript
 const DB = require('mongo-mongo').DB
@@ -444,3 +446,94 @@ let book = new Book({
 })
 ```
 
+###### 约束条件:
+- type: 指定类型约束, 如果你对某个data field只有类型上的约束, 可以使用*```fieldName: TYPE```*简写
+- unique: 如果指定某个data field为unique, 则会在首次CRUD操作之前调用原生的```createIndex('yourFieldName', {unique: true})```来创建unique index 
+- default: 当该data field值未提供时，使用默认值
+- required: 为true时，当提供的data缺少该条目则抛出error
+- sparse: 如果指定摸个data field为spare时，则会在首次CRUD操作之前调用原生的```createIndex('yourFieldName', {sparse: true})```来创建spare index
+- validator: 自定义检查函数，该函数需返回boolean值
+
+### 实例方法
+- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+- 取值／赋值使用setter, getter描述符
+- save: 插入实例的data到数据库中，每个实例都有一个__data属性(unenumerable)指向其向关数据
+- update: 使用setter赋新址，然后调用update向数据库发起更新
+- delete: 删掉数据库中该instance所指向的数据
+- getData: 返回__data属性指向的数据，当有嵌套类型时，该field返回嵌套的document实例
+- addData: 你可以通过addData一次添加多条数据
+
+
+### 类方法
+- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+- getCollection: 参数为callback函数，传递给callback函数的参数为mongodb collection实例
+- getDB: 参数为callback函数，传递给callback函数的参数为mongodb db实例
+- setDB: 设置该类所使用的DB实例
+- setCollectionName: 一个类对应的collection name默认为类名全小写，可以通过该函数显式设置collection name
+
+### 官方原生函数
+- 详细的CRUD操作请参考 <a href="#crud-operation">CRUD operation</a>
+
+### aggregate操作
+下面所有的操作与原生函数接收的参数完全一致，把结果包在promise中返回
+- aggregate
+- mapReduce
+- count
+- distinct
+- bulkWrite
+
+
+### 边界情况
+- 类方法 *updateOne/updateMany* 目前不支持nested document 也不支持如下update operator: ```$inc, $mul, $rename, $min, $max, $addToSet, $setOnInsert```. 原因为以上operator需要更新前数据的值，比如说，你有一个data field通过validator约束为 ```v <= 100 && v >= 90```,此时更新前的数据为100，那么$inc 1的操作会破坏该约束，这样的操作需要先去query到当前值，然后再进行计算，检查符不符合约束，导致对update这样一个操作来讲，性能欠佳，可许可以考虑以后再新加一个这样的方法。
+- 对于类型为Object的data field，如果要更新该Object其中一条属性的值又想要触发__updateField的更新，那么你必须要重新给该data field赋值一下，原因是当给data field赋值是实际上是调用了该field的setter，setter里面会有一个操作来吧该data field的名字push到__updatedField中，这样在update操作时，才去抓取最新的值。但是对于Object类型的field来讲，我们一般会用这样的方式来更新Object的某个property的值```instance.ObjectField.property = 'xxxxx'```,这样的操作实际上是调用该field的getter，没办法调用setter也就没办法更新__updatedField，所以你需要对该field进行赋值操作，```instance.ObjectField = updatedObject```来触发__updatedField的更新。对于nested document来讲，我做了些额外的操作来避免类似的情况，无需次顾虑。所以，这样的情况下，推荐考虑使用nested document。
+
+### CRUD 操作
+| operatrion | instance method | class method | native driver(via class method) |
+| ------     | ------          | ------       |           ------                |
+| Create     |  save           | insertOne    |        insertOneNative          |
+| Create     |  save           | insertMany   |        insertManyNative         |
+| Read       |  getter         | find         |        find                     |
+| Read       |  getter         | findOne      |        findOneNative            |
+| Update     |  setter + update | updateOne   |        updateOneNative          |
+| Update     |  setter + update | replaceOne  |        replaceOneNative         |
+| Update     |  setter + update | updateMany  |        updateManyNative         |
+| Delete     |  delete         | deleteOne    |        deleteOneNative          |
+| Delete     |  delete         | deleteMany   |        deleteManyNative         |
+| Read and Update | getter + update | findOneAndUpdate | findOneAndUpdateNative |
+| Read and Update | getter + update | findOneAndReplace| findOneAndReplaceNative|
+| Read and Delete | getter + delete | findOneAndDelete | findOneAndDeleteNative |
+
+| operation               | called-via  |           explaination         |  exmaple |
+| ------                  | ------      |              ------            |  ------  |
+| save                    | instance    | 写入实例的data数据到database，操作结果包装在promise中返回 | ```book.save().then(r => console.log('saved'))```  |
+| getter/setter           | instance    | 取值／赋值 实例的data field | ```book.price; book.price = 20``` |
+| update                  | instance    | 更新实例中被更新的data到database，操作结果包装在promise中返回 | ```book.update().then(r => console.log('updated'))```    |
+| delete                  | instance    | 从database中删除实例的data数据，操作结果包装在promise中返回 | ```book.delete().then(r => console.log('deleted'))```    |
+| insertOne               | class       | 写入一条data到database中，会依据schema定义检查data的有效性，操作结果包装在promise中返回 | ```Book.insertOne({title: 'Last Evenings on Earth', publish: new Date(2007,3,30)}).then(r => console.log('inserted'))``` |
+| insertMany              | class       | 写入多条data到database中，会依据schema定义检查data的有效性，操作结果包装在promise中返回 | ```Book.insertMany([{title: 'title1'},{title: 'title2'}]).then(r => console.log('inserted'))```|
+| insertOneNative         | class       | 直接调用原生的insertOne函数，不检查data的有效性，操作结果包装在promise中返回 | ```Book.insertOne({title: 'title insert by native driver'}).then(r => console.log('inserted'))``` |
+| insertManyNative        | class       | 直接调用原生的insertMany函数，不检查data的有效性，操作结果包装在promise中返回 | ```Book.insertOne([{title: 'title1'},{title: 'title2'}]).then(r => console.log('inserted'))``` |
+| find                    | class       | 直接调用原生的find函数，cursor包装在promise中返回 | ```Book.find({title: '2666'}).then(cursor => cursor.toArray())``` |
+| findOne                 | class       | 直接调用原生的findOne函数, 匹配到的doc包装在promise中返回 | ```Book.findOne({title: '2666'}).then(doc => doc.title === '2666')``` |
+| findOneNative           | class       | 与findOne相同 | ```Book.findOneNative({title: '2666'}).then(doc => doc.title === '2666')```
+| updateOne               | class       | 更新匹配到的doc，会依据schema定义检查更新data的有效性，操作结果包装在promise中返回 | ```Book.updateOne({title: '2666'}, {$set: {copies: 8000}}).then(r => console.log('updated'))```
+| updateOneNative         | class       | 更新匹配到的doc，不检查更新data的有效性，操作结果包装在promise中返回 |```Book.updateOneNative({title: '2666'}, {$set: {copies: 20000}}).then(r => console.log('updated'))```
+| replaceOne              | class       | 替换匹配到的doc，会依据schema定义检查替换数据的有效性，操作结果包装在promise中返回 | ```Book.replaceOne({title: '2666'},{title: 'new 2666'}).then(r => console.log('replaced'))```|
+| replaceOneNative        | class       | 直接调用原生的replaceOne函数，不检查替换数据的有效性，操作结果包装在promise中返回 | ```Book.replaceOneNative({title: '2666'},{title: 'new 2666'}).then(r => console.log('replaced'))```|
+| updateMany              | class       | 更新多条匹配到的doc，会依据schema定义检查更新数据的有效性，操作结果包装在promise中返回 |```Book.updateMany({title: /title/},{$set: {copies: 6000}}).then(r => console.log('updated'))```|
+| updateManyNative        | class       | 直接调用原生的updateMany函数，不检查更新数据的有效性，操作结果包装在promise中返回 | ```Book.updateManyNative({title: /title/},{$set: {copies: 20000}}).then(r => console.log('updated'))``` |
+| deleteOne               | class       | 直接调用原生deleteOne, 从database中删除一条匹配到的doc,操作结果包装在promise中返回 | ```Book.deleteOne({title: '2666'}).then(r => console.log('deleted'))``` |
+| deleteOneNative         | class       | 与deleteOne相同 | ```Book.deleteOne({title: '2666'}).then(r => console.log('deleted'))``` |
+| deleteMany              | class       | 直接调用原生deleteMany, 从database中删除多条匹配到的doc,操作结果包装在promise中返回 | ```Book.deleteMany({title: /title/}).then(r => console.log('deleted'))``` |
+| deleteManyNative        | class       | 与deleteMany相同 | ```Book.deleteMany({title: /title/}).then(r => console.log('deleted'))``` |
+| findOneAndUpdate        | class       | 更新一条匹配到的doc，会依据schema定义检查更新数据的有效性，更新前或更新后数据(由option returnOriginal决定，默认为true)被包装在promise中返回 | ```Book.findOneAndUpdate({title: '2666'},{$set: {copies: 6000}}).then(doc => doc.copies === 5000)``` |
+| findOneAndUpdateNative  | class       | 直接调用原生findOneAndUpdate, 不检查更新数据的有效性，操作结果被包装在promise中返回，通过.value获取更新前或之后数据(由option returnOriginal决定，默认为true)| ```Book.findOneAndUpdateNative({title: '2666'},{$set: {copies: 20000}}).then(result => result.value.copies === 5000)``` |
+| findOneAndReplace       | class       | 替换一条匹配到的doc，会依据schema定义检查替换数据的有效性，更新前或更新后数据(由option returnOriginal决定，默认为true)被包装在promise中返回 | ```Book.findOneAndReplace({title: '2666'},{title: '2666', copies: 6000}).then(doc => doc.copies === 5000)``` |
+| findOneAndReplaceNative | class       | 直接调用原生findOneAndReplace,不检查替换数据的有效性，操作结果被包装在promise中返回，通过.value获取更新前或之后数据(由option returnOriginal决定，默认为true)| ```Book.findOneAndReplaceNative({title: '2666'},{title: '2666', copies: 20000}).then(result => result.value.copies === 5000)``` |
+| findOneAndDelete        | class       | 删除一条匹配到的doc, 该doc被包装在promise中返回 | ```Book.findOneAndDelete({title: '2666'}).then(doc => doc.title === '2666')``` |
+| findOneAndDeleteNative  | class       | 直接调用原生findOneAndDelete, 操作结果被包装在promise中返回，通过.value获取被删除的doc数据 | ```Book.findOneAndDeleteNative({title: '2666'}).then(result => result.value.title === '2666')``` |
+
+
+### 计划
+- 支持更多的数据类型
+- 也许会添加新的class方法用来进行update操作并支持所有的update operator
