@@ -4,7 +4,7 @@
 
 # __A ES6 class based mongoDB ODM__ *which is a wrapper upon offical mongodbjs driver*
 
-### <a href="#中文-1">中文</a>
+### <a href="#中文">中文版</a>
 
 ### features
 - __Object based: an object representing a document in collection, with CRUD methods and all data fields are setter and getter accessor descriptors.__
@@ -273,7 +273,7 @@ all following class methods accept the same argument as corresponding native fun
 - support more types
 - add new class method to do update operation with supporting of all update operator
 
-## 中 文
+## 中文
 
 ### 特性
 
@@ -485,7 +485,7 @@ let book = new Book({
 
 ### 边界情况
 - 类方法 *updateOne/updateMany* 目前不支持nested document 也不支持如下update operator: ```$inc, $mul, $rename, $min, $max, $addToSet, $setOnInsert```. 原因为以上operator需要更新前数据的值，比如说，你有一个data field通过validator约束为 ```v <= 100 && v >= 90```,此时更新前的数据为100，那么$inc 1的操作会破坏该约束，这样的操作需要先去query到当前值，然后再进行计算，检查符不符合约束，导致对update这样一个操作来讲，性能欠佳，可许可以考虑以后再新加一个这样的方法。
-- 对于类型为Object的data field，如果要更新该Object其中一条属性的值又想要触发__updateField的更新，那么你必须要重新给该data field赋值一下，原因是当给data field赋值是实际上是调用了该field的setter，setter里面会有一个操作来吧该data field的名字push到__updatedField中，这样在update操作时，才去抓取最新的值。但是对于Object类型的field来讲，我们一般会用这样的方式来更新Object的某个property的值```instance.ObjectField.property = 'xxxxx'```,这样的操作实际上是调用该field的getter，没办法调用setter也就没办法更新__updatedField，所以你需要对该field进行赋值操作，```instance.ObjectField = updatedObject```来触发__updatedField的更新。对于nested document来讲，我做了些额外的操作来避免类似的情况，无需次顾虑。所以，这样的情况下，推荐考虑使用nested document。
+- 对于类型为Object的data field，如果要更新该Object其中一条属性的值又想要触发__updateField的更新，那么你必须要重新给该data field赋值一下，原因是当给data field赋值是实际上是调用了该field的setter，setter里面会有一个操作来吧该data field的名字push到__updatedField中，这样在update操作时，才去抓取最新的值。但是对于Object类型的field来讲，我们一般会用这样的方式来更新Object的某个property的值```instance.ObjectField.property = 'xxxxx'```,这样的操作实际上是调用该field的getter，没办法调用setter也就没办法更新__updatedField，所以你需要对该field进行赋值操作，```instance.ObjectField = updatedObject```来触发__updatedField的更新。对于nested document来讲，我做了些额外的操作来避免类似的情况，无需此顾虑。所以，这样的情况下，推荐考虑使用nested document。
 
 ### CRUD 操作
 | operatrion | instance method | class method | native driver(via class method) |
